@@ -1,0 +1,6 @@
+{
+  "name": "Agency Books",
+  "description": "Fast, mobile-optimized income, expenses and profit tracker for agencies with real-time sync, offline support, and activity audit log.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

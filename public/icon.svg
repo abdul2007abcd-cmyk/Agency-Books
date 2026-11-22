@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="128" fill="#1f5f4a"/>
+  <rect x="76" y="96" width="360" height="320" rx="32" fill="#ffffff" fill-opacity="0.12"/>
+  <rect x="96" y="116" width="320" height="280" rx="24" fill="#ffffff"/>
+  <path d="M140 160h160M140 210h232M140 260h180M140 310h200M140 360h140" stroke="#d1d5db" stroke-width="8" stroke-linecap="round"/>
+  <!-- Rupee Symbol in Emerald -->
+  <circle cx="360" cy="330" r="64" fill="#1f5f4a"/>
+  <path d="M344 306h32M344 318h32M344 306v24c0 10 7 14 16 14l16 22M344 330c6 0 16-2 16-12s-10-12-16-12" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
