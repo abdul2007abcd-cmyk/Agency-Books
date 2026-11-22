@@ -26,14 +26,16 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-30 w-full bg-[#f7f6f2]/90 dark:bg-[#121312]/90 backdrop-blur-md border-b border-[#e4e2da] dark:border-[#282724] pt-safe transition-colors">
       <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
-        {/* Brand wordmark + connection status */}
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-[#1f5f4a] flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
-            ₹
-          </div>
+        {/* Brand wordmark + Scale Magnet Logo + connection status */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <img
+            src="/scale-magnet-logo.png"
+            alt="Scale Magnet"
+            className="h-7 max-w-[120px] sm:max-w-[140px] w-auto object-contain shrink-0"
+          />
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <h1 className="font-bold text-base tracking-tight text-[#1b1b19] dark:text-[#efeee9] truncate">
+              <h1 className="font-bold text-sm sm:text-base tracking-tight text-[#1b1b19] dark:text-[#efeee9] truncate">
                 Agency Books
               </h1>
               {/* Live sync pulse */}

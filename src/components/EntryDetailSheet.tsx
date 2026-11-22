@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Transaction, formatCurrency, triggerHaptic } from '../lib/supabase';
-import { X, Check, Clock, Trash2, Share2, Copy, AlertTriangle } from 'lucide-react';
+import { X, Check, Clock, Trash2, Share2, Copy, AlertTriangle, FileText } from 'lucide-react';
 
 interface EntryDetailSheetProps {
   transaction: Transaction | null;
   onClose: () => void;
   onToggleStatus: (id: string, newStatus: 'paid' | 'unpaid') => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onOpenReceipt: (tx: Transaction) => void;
   userName: string;
   onRequireName: () => void;
 }
@@ -16,6 +17,7 @@ export const EntryDetailSheet: React.FC<EntryDetailSheetProps> = ({
   onClose,
   onToggleStatus,
   onDelete,
+  onOpenReceipt,
   userName,
   onRequireName,
 }) => {
@@ -180,6 +182,18 @@ export const EntryDetailSheet: React.FC<EntryDetailSheetProps> = ({
         {/* Action Buttons */}
         {!confirmDelete ? (
           <div className="mt-5 space-y-2">
+            {/* View & Share Branded Receipt / Invoice */}
+            <button
+              onClick={() => {
+                triggerHaptic(10);
+                onOpenReceipt(transaction);
+              }}
+              className="w-full py-3.5 rounded-xl bg-[#0d234a] hover:bg-[#081732] active:scale-[0.98] text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2 group"
+            >
+              <FileText className="w-4 h-4 text-[#149e3e] group-hover:scale-110 transition-transform" />
+              <span>View & Share Scale Magnet Receipt</span>
+            </button>
+
             {/* Toggle Status Button */}
             <button
               onClick={handleToggle}
@@ -199,7 +213,7 @@ export const EntryDetailSheet: React.FC<EntryDetailSheetProps> = ({
               className="w-full py-3 rounded-xl bg-[#f0eee6] dark:bg-[#282724] text-[#1b1b19] dark:text-[#efeee9] font-semibold text-xs flex items-center justify-center gap-2 hover:bg-[#e4e2da] dark:hover:bg-[#33322e] active:scale-[0.98] transition"
             >
               {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
-              {copied ? 'Copied to Clipboard!' : 'Share Entry Details'}
+              {copied ? 'Copied to Clipboard!' : 'Share Quick Text Summary'}
             </button>
 
             {/* Delete Trigger */}

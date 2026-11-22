@@ -9,6 +9,7 @@ import { AnalyticsView } from './components/AnalyticsView';
 import { ActivityView } from './components/ActivityView';
 import { NewEntrySheet } from './components/NewEntrySheet';
 import { EntryDetailSheet } from './components/EntryDetailSheet';
+import { ReceiptModal } from './components/ReceiptModal';
 import { MenuSheet } from './components/MenuSheet';
 import { NameModal } from './components/NameModal';
 import { Transaction } from './lib/supabase';
@@ -36,6 +37,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [isNewEntryOpen, setIsNewEntryOpen] = useState<boolean>(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isNameModalOpen, setIsNameModalOpen] = useState<boolean>(false);
   const [entriesFilter, setEntriesFilter] = useState<'all' | 'income' | 'expense' | 'unpaid'>('all');
@@ -121,6 +123,7 @@ export default function App() {
           <EntriesView
             transactions={activeTransactions}
             onSelectTransaction={(t) => setSelectedTransaction(t)}
+            onOpenReceipt={(t) => setReceiptTransaction(t)}
             initialFilter={entriesFilter}
           />
         )}
@@ -159,6 +162,7 @@ export default function App() {
         recentParties={recentParties}
         userName={userName}
         onRequireName={() => setIsNameModalOpen(true)}
+        onOpenReceipt={(t) => setReceiptTransaction(t)}
       />
 
       {/* Transaction Detail & Actions Sheet */}
@@ -167,8 +171,20 @@ export default function App() {
         onClose={() => setSelectedTransaction(null)}
         onToggleStatus={updateStatus}
         onDelete={deleteTransaction}
+        onOpenReceipt={(t) => {
+          setSelectedTransaction(null);
+          setReceiptTransaction(t);
+        }}
         userName={userName}
         onRequireName={() => setIsNameModalOpen(true)}
+      />
+
+      {/* Scale Magnet Official Receipt & Invoice Modal */}
+      <ReceiptModal
+        transaction={receiptTransaction}
+        isOpen={!!receiptTransaction}
+        onClose={() => setReceiptTransaction(null)}
+        userName={userName}
       />
 
       {/* More Menu & Settings Sheet */}

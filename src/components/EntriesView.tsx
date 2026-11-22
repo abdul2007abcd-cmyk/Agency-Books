@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { Transaction, formatCurrency, triggerHaptic } from '../lib/supabase';
-import { Search, X, ArrowUpRight, ArrowDownLeft, Clock, Filter, ArrowUpDown } from 'lucide-react';
+import { Search, X, ArrowUpRight, ArrowDownLeft, Clock, Filter, ArrowUpDown, FileText } from 'lucide-react';
 
 interface EntriesViewProps {
   transactions: Transaction[];
   onSelectTransaction: (t: Transaction) => void;
+  onOpenReceipt?: (t: Transaction) => void;
   initialFilter?: 'all' | 'income' | 'expense' | 'unpaid';
 }
 
@@ -14,6 +15,7 @@ type SortOption = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc';
 export const EntriesView: React.FC<EntriesViewProps> = ({
   transactions,
   onSelectTransaction,
+  onOpenReceipt,
   initialFilter = 'all',
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -213,18 +215,35 @@ export const EntriesView: React.FC<EntriesViewProps> = ({
                   </div>
                 </div>
 
-                {/* Amount */}
-                <div className="text-right shrink-0">
-                  <div
-                    className={`text-sm sm:text-base font-bold tabular-nums ${
-                      isIncome
-                        ? 'text-[#1c7a4b] dark:text-[#5cc08a]'
-                        : 'text-[#b43e28] dark:text-[#ec8a73]'
-                    }`}
-                  >
-                    {isIncome ? '+' : '−'}
-                    {formatCurrency(t.amount)}
+                {/* Amount & Quick Receipt Button */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="text-right">
+                    <div
+                      className={`text-sm sm:text-base font-bold tabular-nums ${
+                        isIncome
+                          ? 'text-[#1c7a4b] dark:text-[#5cc08a]'
+                          : 'text-[#b43e28] dark:text-[#ec8a73]'
+                      }`}
+                    >
+                      {isIncome ? '+' : '−'}
+                      {formatCurrency(t.amount)}
+                    </div>
                   </div>
+
+                  {onOpenReceipt && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        triggerHaptic(8);
+                        onOpenReceipt(t);
+                      }}
+                      title="View & Share Scale Magnet Receipt"
+                      aria-label="View and share receipt"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#f0eee6] dark:bg-[#282724] text-[#0d234a] dark:text-[#5cc0a0] hover:bg-[#0d234a] hover:text-white dark:hover:bg-[#149e3e] dark:hover:text-white transition active:scale-95"
+                    >
+                      <FileText className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             );

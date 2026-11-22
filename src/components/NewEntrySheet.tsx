@@ -13,10 +13,11 @@ interface NewEntrySheetProps {
     date: string;
     status: 'paid' | 'unpaid';
     descr: string;
-  }) => Promise<boolean | void>;
+  }) => Promise<any>;
   recentParties: string[];
   userName: string;
   onRequireName: () => void;
+  onOpenReceipt?: (tx: any) => void;
 }
 
 export const NewEntrySheet: React.FC<NewEntrySheetProps> = ({
@@ -26,6 +27,7 @@ export const NewEntrySheet: React.FC<NewEntrySheetProps> = ({
   recentParties,
   userName,
   onRequireName,
+  onOpenReceipt,
 }) => {
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [amountStr, setAmountStr] = useState<string>('');
@@ -34,6 +36,7 @@ export const NewEntrySheet: React.FC<NewEntrySheetProps> = ({
   const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [status, setStatus] = useState<'paid' | 'unpaid'>('paid');
   const [descr, setDescr] = useState<string>('');
+  const [generateReceiptAfter, setGenerateReceiptAfter] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [formError, setFormError] = useState<string>('');
 
@@ -92,7 +95,7 @@ export const NewEntrySheet: React.FC<NewEntrySheetProps> = ({
 
     try {
       setIsSubmitting(true);
-      await onSave({
+      const savedTx = await onSave({
         type,
         amount: parsedAmount,
         party: party.trim(),
@@ -106,6 +109,13 @@ export const NewEntrySheet: React.FC<NewEntrySheetProps> = ({
       setParty('');
       setDescr('');
       onClose();
+
+      // If user selected paid and wants receipt, open receipt modal immediately
+      if (status === 'paid' && generateReceiptAfter && onOpenReceipt && savedTx) {
+        setTimeout(() => {
+          onOpenReceipt(savedTx);
+        }, 150);
+      }
     } catch (err: any) {
       setFormError(err?.message || 'Could not save entry. Check internet connection.');
     } finally {
@@ -351,6 +361,18 @@ export const NewEntrySheet: React.FC<NewEntrySheetProps> = ({
                 Unpaid (Pending)
               </button>
             </div>
+
+            {status === 'paid' && (
+              <label className="mt-2.5 flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#0d234a] dark:text-[#5cc0a0] bg-emerald-50/70 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200/70 dark:border-emerald-800/40 transition">
+                <input
+                  type="checkbox"
+                  checked={generateReceiptAfter}
+                  onChange={(e) => setGenerateReceiptAfter(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#149e3e] accent-[#149e3e]"
+                />
+                <span>Generate & share Scale Magnet receipt after saving</span>
+              </label>
+            )}
           </div>
 
           {/* Note (optional) */}

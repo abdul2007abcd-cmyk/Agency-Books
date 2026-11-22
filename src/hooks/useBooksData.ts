@@ -223,7 +223,7 @@ export function useBooksData() {
       });
 
       refreshData();
-      return true;
+      return newTx;
     } catch (err: any) {
       console.error('Failed to add transaction:', err);
       refreshData();
