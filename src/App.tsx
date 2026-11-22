@@ -10,8 +10,18 @@ import { ActivityView } from './components/ActivityView';
 import { NewEntrySheet } from './components/NewEntrySheet';
 import { EntryDetailSheet } from './components/EntryDetailSheet';
 import { ReceiptModal } from './components/ReceiptModal';
+import { PartnerSplitModal } from './components/PartnerSplitModal';
+import { PartnerConfig, DEFAULT_PARTNER_CONFIG } from './lib/partnerSplit';
 import { MenuSheet } from './components/MenuSheet';
 import { NameModal } from './components/NameModal';
+import { LoginScreen } from './components/LoginScreen';
+import { PartnerSecurityModal } from './components/PartnerSecurityModal';
+import {
+  AuthSession,
+  getStoredSession,
+  saveStoredSession,
+  getStoredAccounts,
+} from './lib/auth';
 import { Transaction } from './lib/supabase';
 import { WifiOff, AlertCircle } from 'lucide-react';
 
@@ -34,13 +44,81 @@ export default function App() {
     importTransactions,
   } = useBooksData();
 
+  // Authentication session for the 2 business partners
+  const [session, setSession] = useState<AuthSession | null>(() => getStoredSession());
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState<boolean>(false);
+
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [isNewEntryOpen, setIsNewEntryOpen] = useState<boolean>(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null);
+  const [isPartnerSplitOpen, setIsPartnerSplitOpen] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isNameModalOpen, setIsNameModalOpen] = useState<boolean>(false);
   const [entriesFilter, setEntriesFilter] = useState<'all' | 'income' | 'expense' | 'unpaid'>('all');
+
+  // Synchronize authenticated partner name with transaction author
+  useEffect(() => {
+    if (session?.name && session.name !== userName) {
+      setUserName(session.name);
+    }
+  }, [session, userName, setUserName]);
+
+  // Partner Split Configuration synced with partner accounts
+  const [partnerConfig, setPartnerConfig] = useState<PartnerConfig>(() => {
+    try {
+      const saved = localStorage.getItem('ab.partner_config');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.partner1Name === 'Rahman' || parsed.partner1Name === 'Partner 1') {
+          parsed.partner1Name = 'Abdul';
+        }
+        if (parsed.partner2Name === 'Partner 2') {
+          parsed.partner2Name = 'Punith';
+        }
+        return parsed;
+      }
+    } catch {}
+    const accounts = getStoredAccounts();
+    const p1 = accounts.find((a) => a.id === 'p1');
+    const p2 = accounts.find((a) => a.id === 'p2');
+    return {
+      partner1Name: p1?.name || 'Abdul',
+      partner2Name: p2?.name || 'Punith',
+      partner1SharePct: 50,
+      partner2SharePct: 50,
+      agencyReservePct: 0,
+    };
+  });
+
+  const updatePartnerConfig = (cfg: PartnerConfig) => {
+    setPartnerConfig(cfg);
+    try {
+      localStorage.setItem('ab.partner_config', JSON.stringify(cfg));
+    } catch {}
+  };
+
+  const handleLogout = () => {
+    saveStoredSession(null);
+    setSession(null);
+  };
+
+  const handleRecordPartnerDraw = async (entry: {
+    partnerName: string;
+    amount: number;
+    date: string;
+    descr: string;
+  }) => {
+    await addTransaction({
+      type: 'expense',
+      amount: entry.amount,
+      party: entry.partnerName,
+      cat: 'Partner Draw / Profit Share',
+      date: entry.date,
+      status: 'paid',
+      descr: entry.descr,
+    });
+  };
 
   // Theme management: light / dark
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -87,16 +165,31 @@ export default function App() {
     setActiveTab('entries');
   };
 
+  // If not logged in, render the dedicated Partner Login Screen
+  if (!session) {
+    return (
+      <LoginScreen
+        onLoginSuccess={(newSession) => {
+          setSession(newSession);
+          setUserName(newSession.name);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f7f6f2] dark:bg-[#121312] text-[#1b1b19] dark:text-[#efeee9] flex flex-col font-sans transition-colors selection:bg-[#1f5f4a]/20">
       {/* Top Header */}
       <Header
         userName={userName}
+        currentSession={session}
         isOnline={isOnline}
         isSyncing={isSyncing}
         theme={theme}
         onToggleTheme={toggleTheme}
         onOpenNameModal={() => setIsNameModalOpen(true)}
+        onOpenSecurityModal={() => setIsSecurityModalOpen(true)}
+        onLogout={handleLogout}
         onOpenMenu={() => setIsMenuOpen(true)}
         onRefresh={refreshData}
       />
@@ -116,6 +209,9 @@ export default function App() {
             transactions={activeTransactions}
             onOpenNewEntry={() => setIsNewEntryOpen(true)}
             onFilterUnpaid={handleFilterUnpaidFromOverview}
+            partnerConfig={partnerConfig}
+            onOpenSplitModal={() => setIsPartnerSplitOpen(true)}
+            onQuickRecordDraw={() => setIsPartnerSplitOpen(true)}
           />
         )}
 
@@ -192,15 +288,44 @@ export default function App() {
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
         userName={userName}
+        currentSession={session}
         onOpenNameModal={() => {
           setIsMenuOpen(false);
           setIsNameModalOpen(true);
         }}
+        onOpenSecurityModal={() => {
+          setIsMenuOpen(false);
+          setIsSecurityModalOpen(true);
+        }}
+        onLogout={handleLogout}
+        onOpenPartnerSplit={() => setIsPartnerSplitOpen(true)}
         transactions={activeTransactions}
         onImportBackup={importTransactions}
         theme={theme}
         onToggleTheme={toggleTheme}
         isOnline={isOnline}
+      />
+
+      {/* Partner Profit Split & Draws Modal */}
+      <PartnerSplitModal
+        isOpen={isPartnerSplitOpen}
+        onClose={() => setIsPartnerSplitOpen(false)}
+        transactions={activeTransactions}
+        partnerConfig={partnerConfig}
+        onUpdatePartnerConfig={updatePartnerConfig}
+        onRecordDraw={handleRecordPartnerDraw}
+        userName={userName}
+      />
+
+      {/* Partner Credentials & Passwords Management Modal */}
+      <PartnerSecurityModal
+        isOpen={isSecurityModalOpen}
+        onClose={() => setIsSecurityModalOpen(false)}
+        currentSession={session}
+        onSessionUpdated={(updated) => {
+          setSession(updated);
+          setUserName(updated.name);
+        }}
       />
 
       {/* Name Setup Modal */}

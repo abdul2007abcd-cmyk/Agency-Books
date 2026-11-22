@@ -1,11 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { Transaction, formatCurrency, triggerHaptic } from '../lib/supabase';
 import { ArrowUpRight, ArrowDownLeft, Clock, TrendingUp, AlertCircle, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { PartnerSplitCard } from './PartnerSplitCard';
+import { PartnerConfig } from '../lib/partnerSplit';
 
 interface OverviewViewProps {
   transactions: Transaction[];
   onOpenNewEntry: () => void;
   onFilterUnpaid: () => void;
+  partnerConfig: PartnerConfig;
+  onOpenSplitModal: () => void;
+  onQuickRecordDraw: () => void;
 }
 
 type Period = 'all' | 'this' | 'last' | 'quarter';
@@ -14,6 +19,9 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   transactions,
   onOpenNewEntry,
   onFilterUnpaid,
+  partnerConfig,
+  onOpenSplitModal,
+  onQuickRecordDraw,
 }) => {
   const [period, setPeriod] = useState<Period>('this');
 
@@ -257,6 +265,14 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           </div>
         </button>
       </div>
+
+      {/* Partner Profit Split Card */}
+      <PartnerSplitCard
+        transactions={transactions}
+        partnerConfig={partnerConfig}
+        onOpenSplitModal={onOpenSplitModal}
+        onQuickRecordDraw={onQuickRecordDraw}
+      />
 
       {/* Income by Client Section */}
       <div className="space-y-2">

@@ -46,9 +46,11 @@ export const CATEGORIES = {
     'Ad management',
     'SEO',
     'Content / Design',
+    'Partner Capital Contribution',
     'Other income',
   ],
   expense: [
+    'Partner Draw / Profit Share',
     'Video Editing / Creative',
     'Freelancers & Contractors',
     'Salaries & Stipends',

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Transaction, triggerHaptic } from '../lib/supabase';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { AuthSession } from '../lib/auth';
 import {
   X,
   User,
@@ -13,13 +14,22 @@ import {
   Info,
   Check,
   Share2,
+  Users,
+  ChevronRight,
+  KeyRound,
+  LogOut,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface MenuSheetProps {
   isOpen: boolean;
   onClose: () => void;
   userName: string;
+  currentSession: AuthSession | null;
   onOpenNameModal: () => void;
+  onOpenSecurityModal?: () => void;
+  onLogout?: () => void;
+  onOpenPartnerSplit?: () => void;
   transactions: Transaction[];
   onImportBackup: (rows: any[]) => Promise<void>;
   theme: 'light' | 'dark';
@@ -31,7 +41,11 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
   isOpen,
   onClose,
   userName,
+  currentSession,
   onOpenNameModal,
+  onOpenSecurityModal,
+  onLogout,
+  onOpenPartnerSplit,
   transactions,
   onImportBackup,
   theme,
@@ -164,29 +178,94 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
           </div>
         )}
 
-        {/* User Card */}
-        <div className="p-3.5 bg-[#f7f6f2] dark:bg-[#242320] rounded-2xl flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#1f5f4a] text-white flex items-center justify-center font-bold text-sm">
-              {userName ? userName.charAt(0).toUpperCase() : '?'}
-            </div>
-            <div>
-              <div className="text-xs text-[#6c6b65] dark:text-[#9b998f]">Signed in as</div>
-              <div className="font-bold text-sm text-[#1b1b19] dark:text-[#efeee9]">
-                {userName || 'Name not set'}
+        {/* Partner Identity Card */}
+        <div className="p-4 bg-[#f7f6f2] dark:bg-[#242320] rounded-2xl border border-[#e4e2da] dark:border-[#33322e] space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-[#0d234a] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                {(currentSession?.name || userName || 'P').charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-sm text-[#0d234a] dark:text-[#efeee9]">
+                    {currentSession?.name || userName || 'Partner'}
+                  </span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-[#149e3e]/15 text-[#149e3e] dark:text-[#5cc08a] font-semibold">
+                    {currentSession?.role || 'Partner'}
+                  </span>
+                </div>
+                <div className="text-[11px] text-[#6c6b65] dark:text-[#9b998f] font-mono mt-0.5">
+                  ID: @{currentSession?.username || 'user'}
+                </div>
               </div>
             </div>
+
+            {onLogout && (
+              <button
+                onClick={() => {
+                  triggerHaptic(10);
+                  onClose();
+                  onLogout();
+                }}
+                title="Sign out of partner account"
+                className="p-2 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 active:scale-95 transition"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
+
+          {/* Quick buttons under partner card */}
+          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#e4e2da]/70 dark:border-[#383733]/70">
+            {onOpenSecurityModal && (
+              <button
+                onClick={() => {
+                  triggerHaptic(8);
+                  onClose();
+                  onOpenSecurityModal();
+                }}
+                className="py-2 px-2.5 rounded-xl bg-white dark:bg-[#1a1917] border border-[#e4e2da] dark:border-[#383733] text-[11px] font-semibold text-[#0d234a] dark:text-[#efeee9] hover:border-[#0d234a] dark:hover:border-[#149e3e] flex items-center justify-center gap-1.5 transition active:scale-95"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-[#149e3e]" />
+                <span>Partner Passwords</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                triggerHaptic(8);
+                onOpenNameModal();
+              }}
+              className="py-2 px-2.5 rounded-xl bg-white dark:bg-[#1a1917] border border-[#e4e2da] dark:border-[#383733] text-[11px] font-semibold text-[#6c6b65] dark:text-[#9b998f] hover:text-[#1b1b19] flex items-center justify-center gap-1.5 transition active:scale-95"
+            >
+              <User className="w-3.5 h-3.5 text-[#6c6b65]" />
+              <span>Change Display</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Partner Profit Split Action Button */}
+        {onOpenPartnerSplit && (
           <button
             onClick={() => {
               triggerHaptic(8);
-              onOpenNameModal();
+              onClose();
+              onOpenPartnerSplit();
             }}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#ffffff] dark:bg-[#1c1b18] border border-[#e4e2da] dark:border-[#383733] text-[#1f5f4a] dark:text-[#5cc0a0]"
+            className="w-full p-3.5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 hover:bg-blue-100/70 dark:hover:bg-blue-900/40 border border-blue-200/70 dark:border-blue-800/40 text-left flex items-center justify-between text-xs font-semibold text-[#0d234a] dark:text-[#93c5fd] transition"
           >
-            Change
+            <div className="flex items-center gap-2.5">
+              <Users className="w-4 h-4 text-[#0d234a] dark:text-[#60a5fa]" />
+              <div>
+                <div className="font-bold">Partner Profit Split & Equity</div>
+                <div className="text-[10px] text-blue-600 dark:text-blue-300 font-normal">
+                  Live split shares, partner draws, and statements
+                </div>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-blue-500" />
           </button>
-        </div>
+        )}
 
         {/* PWA Install Button Section */}
         {!isInstalled && (
