@@ -48,6 +48,11 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   const totalAmount = subtotal + gstAmount;
   const isPaid = transaction.status === 'paid';
 
+  const isExpense = transaction.type === 'expense';
+  const docTitle = isExpense
+    ? docType === 'receipt' ? 'Payment Voucher' : 'Expense Invoice'
+    : docType === 'receipt' ? 'Payment Receipt' : 'Tax Invoice';
+
   const receiptOptions: ReceiptOptions = {
     docType,
     receiptNo,
@@ -69,12 +74,12 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Scale_Magnet_${docType}_${transaction.party.replace(/\s+/g, '_')}_${transaction.date}.png`;
+      a.download = `Scale_Magnet_${isExpense ? 'Voucher' : docType}_${transaction.party.replace(/\s+/g, '_')}_${transaction.date}.png`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      setShareSuccess('Receipt downloaded as image!');
+      setShareSuccess(`${isExpense ? 'Payment voucher' : 'Receipt'} downloaded as image!`);
       setTimeout(() => setShareSuccess(''), 3000);
     } catch (err: any) {
       console.error('Failed to download image:', err);
@@ -88,16 +93,16 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
     setIsGenerating(true);
     setShareSuccess('');
 
-    const formattedText = `*SCALE MAGNET — ${docType.toUpperCase()}* ⚡\n` +
-      `Receipt No: ${receiptNo}\n` +
-      `Client: ${transaction.party}\n` +
+    const formattedText = `*SCALE MAGNET — ${isExpense ? 'PAYMENT VOUCHER' : docType.toUpperCase()}* ⚡\n` +
+      `${isExpense ? 'Voucher No' : 'Receipt No'}: ${receiptNo}\n` +
+      `${isExpense ? 'Paid To / Editor' : 'Client'}: ${transaction.party}\n` +
       `Amount: ${formatCurrency(totalAmount)}\n` +
       `Service: ${transaction.cat}\n` +
       `Date: ${transaction.date}\n` +
       `Payment: ${paymentMethod}\n` +
-      `Status: ${isPaid ? 'PAID & VERIFIED ✅' : 'PENDING ⏳'}\n` +
-      `Authorized: ${authorizedBy}\n\n` +
-      `Thank you for scaling with Scale Magnet!`;
+      `Status: ${isPaid ? (isExpense ? 'PAID & DISBURSED ✅' : 'PAID & VERIFIED ✅') : 'PENDING ⏳'}\n` +
+      `${isExpense ? 'Disbursed By' : 'Authorized By'}: ${authorizedBy}\n\n` +
+      `Thank you for working with Scale Magnet!`;
 
     try {
       const blob = await getReceiptBlob();
@@ -326,7 +331,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 
             <div className="text-right shrink-0">
               <span className="text-xs uppercase font-extrabold tracking-wider text-[#0d234a] block">
-                {docType === 'receipt' ? 'Payment Receipt' : 'Tax Invoice'}
+                {docTitle}
               </span>
               <span className="text-xs text-slate-500 font-mono block mt-0.5">
                 #{receiptNo}
@@ -347,7 +352,11 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               }`}
             >
               <Check className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{isPaid ? 'PAID IN FULL' : 'PAYMENT PENDING'}</span>
+              <span>
+                {isPaid
+                  ? isExpense ? 'PAID & DISBURSED' : 'PAID IN FULL'
+                  : isExpense ? 'PAYOUT PENDING' : 'PAYMENT PENDING'}
+              </span>
             </div>
             <span className="text-[11px] text-slate-400 font-medium">
               Verified Electronic Record
@@ -358,7 +367,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 bg-slate-50 p-3.5 rounded-xl border border-slate-100 text-xs">
             <div>
               <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">
-                {docType === 'receipt' ? 'Received From:' : 'Billed To:'}
+                {isExpense ? 'Paid To / Beneficiary:' : docType === 'receipt' ? 'Received From:' : 'Billed To:'}
               </span>
               <div className="text-sm font-bold text-slate-900">
                 {transaction.party}
@@ -433,7 +442,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             {/* Total Paid Highlight */}
             <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 mt-2">
               <span className="font-bold text-xs uppercase tracking-wider text-[#149e3e]">
-                Total Amount Paid
+                {isExpense ? 'Total Amount Disbursed' : 'Total Amount Paid'}
               </span>
               <span className="text-xl sm:text-2xl font-extrabold text-[#149e3e] tabular-nums">
                 {formatCurrency(totalAmount)}

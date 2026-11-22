@@ -66,16 +66,16 @@ export async function generateReceiptImageBlob(
   ctx.textAlign = 'right';
   ctx.fillStyle = '#0d234a';
   ctx.font = 'bold 24px sans-serif';
-  ctx.fillText(
-    options.docType === 'receipt' ? 'PAYMENT RECEIPT' : 'TAX INVOICE',
-    width - 50,
-    70
-  );
+  const isExpense = tx.type === 'expense';
+  const docTitle = isExpense
+    ? options.docType === 'receipt' ? 'PAYMENT VOUCHER' : 'EXPENSE INVOICE'
+    : options.docType === 'receipt' ? 'PAYMENT RECEIPT' : 'TAX INVOICE';
+  ctx.fillText(docTitle, width - 50, 70);
 
   ctx.fillStyle = '#64748b';
   ctx.font = '13px sans-serif';
   ctx.fillText('Scale Magnet Digital Growth Agency', width - 50, 92);
-  ctx.fillText(`Receipt #: ${options.receiptNo}`, width - 50, 112);
+  ctx.fillText(`${isExpense ? 'Voucher #' : 'Receipt #'}: ${options.receiptNo}`, width - 50, 112);
   ctx.fillText(`Date: ${tx.date}`, width - 50, 130);
 
   // Divider
@@ -91,17 +91,20 @@ export async function generateReceiptImageBlob(
   ctx.textAlign = 'left';
   ctx.fillStyle = isPaid ? '#dcfce7' : '#fef3c7';
   ctx.beginPath();
-  ctx.roundRect(50, 175, 140, 32, 16);
+  ctx.roundRect(50, 175, 170, 32, 16);
   ctx.fill();
 
   ctx.fillStyle = isPaid ? '#15803d' : '#b45309';
   ctx.font = 'bold 13px sans-serif';
-  ctx.fillText(isPaid ? '✓ PAID IN FULL' : '⏳ UNPAID / DUE', 68, 196);
+  const statusText = isPaid
+    ? isExpense ? '✓ PAID & DISBURSED' : '✓ PAID IN FULL'
+    : isExpense ? '⏳ PAYOUT DUE' : '⏳ UNPAID / DUE';
+  ctx.fillText(statusText, 66, 196);
 
-  // Bill To section
+  // Party section
   ctx.fillStyle = '#64748b';
   ctx.font = 'bold 12px sans-serif';
-  ctx.fillText('RECEIVED FROM / BILLED TO:', 50, 245);
+  ctx.fillText(isExpense ? 'PAID TO / BENEFICIARY:' : 'RECEIVED FROM / BILLED TO:', 50, 245);
 
   ctx.fillStyle = '#0f172a';
   ctx.font = 'bold 22px sans-serif';
@@ -212,7 +215,7 @@ export async function generateReceiptImageBlob(
   ctx.textAlign = 'left';
   ctx.fillStyle = '#166534';
   ctx.font = 'bold 14px sans-serif';
-  ctx.fillText('TOTAL AMOUNT PAID', width - 340, currentY + 34);
+  ctx.fillText(isExpense ? 'TOTAL AMOUNT DISBURSED' : 'TOTAL AMOUNT PAID', width - 340, currentY + 34);
 
   ctx.textAlign = 'right';
   ctx.fillStyle = '#149e3e';
