@@ -66,16 +66,30 @@ export async function generateReceiptImageBlob(
   ctx.textAlign = 'right';
   ctx.fillStyle = '#0d234a';
   ctx.font = 'bold 24px sans-serif';
+  const isDraw =
+    tx.cat === 'Partner Draw / Profit Share' ||
+    tx.cat.toLowerCase().includes('partner draw') ||
+    tx.cat.toLowerCase().includes('profit share');
   const isExpense = tx.type === 'expense';
-  const docTitle = isExpense
-    ? options.docType === 'receipt' ? 'PAYMENT VOUCHER' : 'EXPENSE INVOICE'
-    : options.docType === 'receipt' ? 'PAYMENT RECEIPT' : 'TAX INVOICE';
+  const docTitle = isDraw
+    ? 'PARTNER DRAW VOUCHER'
+    : isExpense
+    ? options.docType === 'receipt'
+      ? 'PAYMENT VOUCHER'
+      : 'EXPENSE INVOICE'
+    : options.docType === 'receipt'
+    ? 'PAYMENT RECEIPT'
+    : 'TAX INVOICE';
   ctx.fillText(docTitle, width - 50, 70);
 
   ctx.fillStyle = '#64748b';
   ctx.font = '13px sans-serif';
   ctx.fillText('Scale Magnet Digital Growth Agency', width - 50, 92);
-  ctx.fillText(`${isExpense ? 'Voucher #' : 'Receipt #'}: ${options.receiptNo}`, width - 50, 112);
+  ctx.fillText(
+    `${isDraw ? 'Draw Voucher #' : isExpense ? 'Voucher #' : 'Receipt #'}: ${options.receiptNo}`,
+    width - 50,
+    112
+  );
   ctx.fillText(`Date: ${tx.date}`, width - 50, 130);
 
   // Divider
@@ -91,20 +105,33 @@ export async function generateReceiptImageBlob(
   ctx.textAlign = 'left';
   ctx.fillStyle = isPaid ? '#dcfce7' : '#fef3c7';
   ctx.beginPath();
-  ctx.roundRect(50, 175, 170, 32, 16);
+  ctx.roundRect(50, 175, 185, 32, 16);
   ctx.fill();
 
   ctx.fillStyle = isPaid ? '#15803d' : '#b45309';
   ctx.font = 'bold 13px sans-serif';
   const statusText = isPaid
-    ? isExpense ? '✓ PAID & DISBURSED' : '✓ PAID IN FULL'
-    : isExpense ? '⏳ PAYOUT DUE' : '⏳ UNPAID / DUE';
+    ? isDraw
+      ? '✓ DISBURSED TO PARTNER'
+      : isExpense
+      ? '✓ PAID & DISBURSED'
+      : '✓ PAID IN FULL'
+    : isDraw
+    ? '⏳ PENDING DRAW'
+    : isExpense
+    ? '⏳ PAYOUT DUE'
+    : '⏳ UNPAID / DUE';
   ctx.fillText(statusText, 66, 196);
 
   // Party section
   ctx.fillStyle = '#64748b';
   ctx.font = 'bold 12px sans-serif';
-  ctx.fillText(isExpense ? 'PAID TO / BENEFICIARY:' : 'RECEIVED FROM / BILLED TO:', 50, 245);
+  const partyLabel = isDraw
+    ? 'WITHDRAWING BUSINESS PARTNER:'
+    : isExpense
+    ? 'PAID TO / BENEFICIARY:'
+    : 'RECEIVED FROM / BILLED TO:';
+  ctx.fillText(partyLabel, 50, 245);
 
   ctx.fillStyle = '#0f172a';
   ctx.font = 'bold 22px sans-serif';

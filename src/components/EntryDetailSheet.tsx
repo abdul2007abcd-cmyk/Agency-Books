@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Transaction, formatCurrency, triggerHaptic } from '../lib/supabase';
-import { X, Check, Clock, Trash2, Share2, Copy, AlertTriangle, FileText } from 'lucide-react';
+import { isPartnerDraw } from '../lib/accounting';
+import { X, Check, Clock, Trash2, Share2, Copy, AlertTriangle, FileText, Users, Info } from 'lucide-react';
 
 interface EntryDetailSheetProps {
   transaction: Transaction | null;
@@ -27,6 +28,7 @@ export const EntryDetailSheet: React.FC<EntryDetailSheetProps> = ({
   if (!transaction) return null;
 
   const isIncome = transaction.type === 'income';
+  const isDraw = isPartnerDraw(transaction);
   const isPaid = transaction.status === 'paid';
 
   const handleToggle = async () => {
@@ -75,22 +77,22 @@ export const EntryDetailSheet: React.FC<EntryDetailSheetProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
 
-      {/* Sheet panel */}
+      {/* Dialog panel */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="entry-detail-title"
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-[#ffffff] dark:bg-[#1c1b18] rounded-t-3xl border-t border-[#e4e2da] dark:border-[#33322e] shadow-2xl p-5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] transition-transform"
+        className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto bg-[#ffffff] dark:bg-[#1c1b18] rounded-t-3xl sm:rounded-3xl border border-[#e4e2da] dark:border-[#33322e] shadow-2xl p-5 sm:p-6 pb-[calc(24px+env(safe-area-inset-bottom,0px))] transition-all"
       >
-        {/* Drag handle */}
-        <div className="w-10 h-1.5 bg-[#d8d6ce] dark:bg-[#383733] rounded-full mx-auto mb-4" />
+        {/* Drag handle for mobile */}
+        <div className="w-10 h-1.5 bg-[#d8d6ce] dark:bg-[#383733] rounded-full mx-auto mb-4 sm:hidden" />
 
         {/* Top bar */}
         <div className="flex items-start justify-between pb-3 border-b border-[#f0eee6] dark:border-[#2b2a26]">
@@ -98,11 +100,13 @@ export const EntryDetailSheet: React.FC<EntryDetailSheetProps> = ({
             <span
               className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md mb-1 ${
                 isIncome
-                  ? 'bg-emerald-50 text-[#1c7a4b] dark:bg-emerald-950/60 dark:text-[#5cc08a]'
-                  : 'bg-rose-50 text-[#b43e28] dark:bg-rose-950/60 dark:text-[#ec8a73]'
+                  ? 'bg-emerald-50 text-[#149e3e] dark:bg-emerald-950/60 dark:text-[#5cc08a]'
+                  : isDraw
+                  ? 'bg-blue-100 text-[#0d234a] dark:bg-blue-900/60 dark:text-blue-200'
+                  : 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400'
               }`}
             >
-              {transaction.type}
+              {isDraw ? 'Partner Profit Draw' : transaction.type === 'income' ? 'Client Income' : 'Operating Expense'}
             </span>
             <h2 id="entry-detail-title" className="text-xl font-extrabold text-[#1b1b19] dark:text-[#efeee9] truncate">
               {transaction.party}
@@ -117,16 +121,29 @@ export const EntryDetailSheet: React.FC<EntryDetailSheetProps> = ({
           </button>
         </div>
 
+        {/* Partner Draw Equity Notice */}
+        {isDraw && (
+          <div className="mt-3 p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/40 text-xs text-blue-900 dark:text-blue-200 flex items-start gap-2">
+            <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">Equity Withdrawal: </span>
+              <span>Deducted from partner's profit share; excluded from operating expenses.</span>
+            </div>
+          </div>
+        )}
+
         {/* Amount display */}
         <div className="py-4 text-center">
           <div className="text-xs uppercase font-semibold tracking-wider text-[#6c6b65] dark:text-[#9b998f]">
-            Amount
+            {isDraw ? 'Profit Disbursed' : 'Amount'}
           </div>
           <div
             className={`text-3xl sm:text-4xl font-extrabold tabular-nums mt-1 ${
               isIncome
-                ? 'text-[#1c7a4b] dark:text-[#5cc08a]'
-                : 'text-[#b43e28] dark:text-[#ec8a73]'
+                ? 'text-[#149e3e] dark:text-[#5cc08a]'
+                : isDraw
+                ? 'text-[#0d234a] dark:text-[#93c5fd]'
+                : 'text-rose-600 dark:text-rose-400'
             }`}
           >
             {isIncome ? '+' : '−'}
@@ -141,7 +158,7 @@ export const EntryDetailSheet: React.FC<EntryDetailSheetProps> = ({
               }`}
             >
               {isPaid ? <Check className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-              {isPaid ? 'Paid & Settled' : 'Unpaid (Pending)'}
+              {isPaid ? (isDraw ? 'Disbursed to Partner' : 'Paid & Settled') : 'Unpaid (Pending)'}
             </span>
           </div>
         </div>

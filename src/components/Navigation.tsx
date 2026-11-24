@@ -16,14 +16,14 @@ export const Navigation: React.FC<NavigationProps> = ({
   unpaidCount,
 }) => {
   const tabs = [
-    { id: 'overview' as TabType, label: 'Overview', icon: LayoutDashboard },
-    { id: 'entries' as TabType, label: 'Entries', icon: ReceiptText, badge: unpaidCount },
-    { id: 'analytics' as TabType, label: 'Analytics', icon: BarChart3 },
-    { id: 'activity' as TabType, label: 'Activity', icon: History },
+    { id: 'overview' as TabType, label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'entries' as TabType, label: 'Ledger', icon: ReceiptText, badge: unpaidCount },
+    { id: 'analytics' as TabType, label: 'Reports', icon: BarChart3 },
+    { id: 'activity' as TabType, label: 'Audit Log', icon: History },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#ffffff]/95 dark:bg-[#181816]/95 backdrop-blur-lg border-t border-[#e4e2da] dark:border-[#2b2a26] pb-safe transition-colors">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#ffffff]/95 dark:bg-[#181816]/95 backdrop-blur-lg border-t border-[#e4e2da] dark:border-[#2b2a26] pb-safe transition-colors shadow-lg">
       <div className="max-w-2xl mx-auto grid grid-cols-4 h-16 items-center px-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -37,14 +37,14 @@ export const Navigation: React.FC<NavigationProps> = ({
               }}
               className={`relative flex flex-col items-center justify-center h-full min-h-[48px] w-full transition-colors ${
                 isActive
-                  ? 'text-[#1f5f4a] dark:text-[#5cc0a0] font-semibold'
+                  ? 'text-[#0d234a] dark:text-[#5cc08a] font-bold'
                   : 'text-[#6c6b65] dark:text-[#9b998f] hover:text-[#1b1b19] dark:hover:text-[#efeee9]'
               }`}
             >
               <div className="relative">
                 <Icon
                   className={`w-5 h-5 transition-transform ${
-                    isActive ? 'scale-110' : 'scale-100'
+                    isActive ? 'scale-110 text-[#0d234a] dark:text-[#5cc08a]' : 'scale-100'
                   }`}
                 />
                 {tab.badge !== undefined && tab.badge > 0 && (
@@ -53,11 +53,11 @@ export const Navigation: React.FC<NavigationProps> = ({
                   </span>
                 )}
               </div>
-              <span className="text-[11px] mt-1 tracking-tight leading-none">
+              <span className="text-[11px] mt-1 tracking-tight leading-none font-medium">
                 {tab.label}
               </span>
               {isActive && (
-                <span className="absolute top-0 w-8 h-0.5 rounded-full bg-[#1f5f4a] dark:bg-[#5cc0a0]" />
+                <span className="absolute top-0 w-8 h-0.5 rounded-full bg-[#149e3e]" />
               )}
             </button>
           );

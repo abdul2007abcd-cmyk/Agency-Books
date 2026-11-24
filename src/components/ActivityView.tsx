@@ -34,7 +34,7 @@ export const ActivityView: React.FC<ActivityViewProps> = ({
   };
 
   return (
-    <div className="space-y-3 pb-28 pt-2">
+    <div className="space-y-3 pb-28 md:pb-12 pt-2">
       <div className="flex items-center justify-between px-1">
         <div>
           <h2 className="text-base font-bold text-[#1b1b19] dark:text-[#efeee9]">

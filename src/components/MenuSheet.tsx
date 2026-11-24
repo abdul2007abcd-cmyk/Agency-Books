@@ -141,22 +141,22 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
 
-      {/* Sheet panel */}
+      {/* Dialog panel */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="menu-title"
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-[#ffffff] dark:bg-[#1c1b18] rounded-t-3xl border-t border-[#e4e2da] dark:border-[#33322e] shadow-2xl p-5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] transition-transform space-y-4"
+        className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto bg-[#ffffff] dark:bg-[#1c1b18] rounded-t-3xl sm:rounded-3xl border border-[#e4e2da] dark:border-[#33322e] shadow-2xl p-5 sm:p-6 pb-[calc(24px+env(safe-area-inset-bottom,0px))] transition-all space-y-4"
       >
-        {/* Drag handle */}
-        <div className="w-10 h-1.5 bg-[#d8d6ce] dark:bg-[#383733] rounded-full mx-auto mb-2" />
+        {/* Drag handle for mobile */}
+        <div className="w-10 h-1.5 bg-[#d8d6ce] dark:bg-[#383733] rounded-full mx-auto mb-2 sm:hidden" />
 
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[#f0eee6] dark:border-[#2b2a26]">

@@ -1,6 +1,20 @@
 import React, { useState, useMemo } from 'react';
 import { Transaction, formatCurrency, triggerHaptic } from '../lib/supabase';
-import { ArrowUpRight, ArrowDownLeft, Clock, TrendingUp, AlertCircle, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { isPartnerDraw, isOperatingExpense, calculateAccountingSummary } from '../lib/accounting';
+import {
+  ArrowUpRight,
+  ArrowDownLeft,
+  Clock,
+  TrendingUp,
+  AlertCircle,
+  ChevronRight,
+  CheckCircle2,
+  Users,
+  Wallet,
+  Briefcase,
+  FileSpreadsheet,
+  Info,
+} from 'lucide-react';
 import { PartnerSplitCard } from './PartnerSplitCard';
 import { PartnerConfig } from '../lib/partnerSplit';
 
@@ -37,6 +51,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   // Filter transactions by period
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
+      if (t.deleted_at) return false;
       if (period === 'all') return true;
       if (period === 'this') return t.date.startsWith(currentMonthStr);
       if (period === 'last') return t.date.startsWith(lastMonthStr);
@@ -48,49 +63,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
     });
   }, [transactions, period, currentMonthStr, lastMonthStr, quarterStartMonth]);
 
-  // Calculations
-  const incomePaid = useMemo(
-    () => filtered.filter((t) => t.type === 'income' && t.status === 'paid').reduce((acc, t) => acc + t.amount, 0),
-    [filtered]
-  );
-
-  const expensePaid = useMemo(
-    () => filtered.filter((t) => t.type === 'expense' && t.status === 'paid').reduce((acc, t) => acc + t.amount, 0),
-    [filtered]
-  );
-
-  const netProfit = incomePaid - expensePaid;
-  const profitMargin = incomePaid > 0 ? ((netProfit / incomePaid) * 100).toFixed(1) : '0';
-
-  const toReceive = useMemo(
-    () => filtered.filter((t) => t.type === 'income' && t.status === 'unpaid').reduce((acc, t) => acc + t.amount, 0),
-    [filtered]
-  );
-
-  const toPay = useMemo(
-    () => filtered.filter((t) => t.type === 'expense' && t.status === 'unpaid').reduce((acc, t) => acc + t.amount, 0),
-    [filtered]
-  );
-
-  const clientIncome = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const t of filtered) {
-      if (t.type === 'income' && t.status === 'paid') {
-        map.set(t.party, (map.get(t.party) || 0) + t.amount);
-      }
-    }
-    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
-  }, [filtered]);
-
-  const expenseCategories = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const t of filtered) {
-      if (t.type === 'expense' && t.status === 'paid') {
-        map.set(t.cat, (map.get(t.cat) || 0) + t.amount);
-      }
-    }
-    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
-  }, [filtered]);
+  // Complete Standard Accounting Calculations
+  const summary = useMemo(() => calculateAccountingSummary(filtered), [filtered]);
 
   const periodOptions: { key: Period; label: string }[] = [
     { key: 'this', label: 'This month' },
@@ -100,7 +74,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   ];
 
   return (
-    <div className="space-y-4 pb-28 pt-2">
+    <div className="space-y-4 pb-28 md:pb-12 pt-2">
       {/* Period selection chips */}
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
         {periodOptions.map((opt) => (
@@ -112,7 +86,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             }}
             className={`min-h-[38px] px-4 py-2 text-xs font-semibold rounded-full whitespace-nowrap transition-colors ${
               period === opt.key
-                ? 'bg-[#1f5f4a] text-white shadow-sm'
+                ? 'bg-[#0d234a] text-white shadow-sm'
                 : 'bg-[#ffffff] dark:bg-[#1e1d1b] text-[#6c6b65] dark:text-[#9b998f] border border-[#e4e2da] dark:border-[#33322e] hover:text-[#1b1b19]'
             }`}
           >
@@ -121,61 +95,66 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
         ))}
       </div>
 
-      {/* Net profit hero card */}
-      <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-5 shadow-xs">
+      {/* Net Operating Profit Hero Card (Operating Income minus OpEx) */}
+      <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-3xl p-5 sm:p-6 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f]">
-            Net Profit
-          </span>
-          {incomePaid > 0 && (
+          <div>
+            <span className="text-xs font-bold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f]">
+              Net Operating Profit (Agency EBITDA)
+            </span>
+            <p className="text-[11px] text-[#6c6b65] dark:text-[#9b998f] mt-0.5">
+              Gross Revenue minus Operating Costs (Excludes partner distributions)
+            </p>
+          </div>
+          {summary.grossRevenue > 0 && (
             <span
-              className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
-                netProfit >= 0
-                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
-                  : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
+              className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                summary.netOperatingProfit >= 0
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200/50'
+                  : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200/50'
               }`}
             >
-              {profitMargin}% margin
+              {summary.operatingMarginPct.toFixed(1)}% margin
             </span>
           )}
         </div>
 
-        <div className="mt-2 flex items-baseline gap-2">
+        <div className="flex items-baseline gap-2 pt-1">
           <span
             className={`text-3xl sm:text-4xl font-extrabold tracking-tight tabular-nums ${
-              netProfit >= 0
-                ? 'text-[#1c7a4b] dark:text-[#5cc08a]'
-                : 'text-[#b43e28] dark:text-[#ec8a73]'
+              summary.netOperatingProfit >= 0
+                ? 'text-[#149e3e] dark:text-[#5cc08a]'
+                : 'text-rose-600 dark:text-rose-400'
             }`}
           >
-            {formatCurrency(netProfit)}
+            {formatCurrency(summary.netOperatingProfit)}
           </span>
         </div>
 
-        {/* Ratio bar */}
-        {(incomePaid > 0 || expensePaid > 0) && (
-          <div className="mt-4 pt-4 border-t border-[#f0eee6] dark:border-[#2b2a26]">
+        {/* Operating Ratio Visual */}
+        {(summary.grossRevenue > 0 || summary.operatingExpenses > 0) && (
+          <div className="pt-3 border-t border-[#f0eee6] dark:border-[#2b2a26]">
             <div className="flex justify-between text-xs text-[#6c6b65] dark:text-[#9b998f] mb-1.5 font-medium">
-              <span>Income: {formatCurrency(incomePaid)}</span>
-              <span>Expenses: {formatCurrency(expensePaid)}</span>
+              <span>Gross Inflow: {formatCurrency(summary.grossRevenue)}</span>
+              <span>Business OpEx: {formatCurrency(summary.operatingExpenses)}</span>
             </div>
             <div className="w-full h-2.5 bg-[#f0eee6] dark:bg-[#2c2b27] rounded-full overflow-hidden flex">
               <div
-                className="bg-[#1c7a4b] dark:bg-[#5cc08a] h-full transition-all"
+                className="bg-[#149e3e] h-full transition-all"
                 style={{
                   width: `${
-                    incomePaid + expensePaid > 0
-                      ? (incomePaid / (incomePaid + expensePaid)) * 100
+                    summary.grossRevenue + summary.operatingExpenses > 0
+                      ? (summary.grossRevenue / (summary.grossRevenue + summary.operatingExpenses)) * 100
                       : 50
                   }%`,
                 }}
               />
               <div
-                className="bg-[#b43e28] dark:bg-[#ec8a73] h-full transition-all"
+                className="bg-rose-500 h-full transition-all"
                 style={{
                   width: `${
-                    incomePaid + expensePaid > 0
-                      ? (expensePaid / (incomePaid + expensePaid)) * 100
+                    summary.grossRevenue + summary.operatingExpenses > 0
+                      ? (summary.operatingExpenses / (summary.grossRevenue + summary.operatingExpenses)) * 100
                       : 50
                   }%`,
                 }}
@@ -185,190 +164,227 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
         )}
       </div>
 
-      {/* 2x2 Metric Grid */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Income Card */}
+      {/* 4 Financial Accounting Pillars */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* 1. Gross Revenue Card */}
         <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-4">
-          <div className="flex items-center justify-between text-[#1c7a4b] dark:text-[#5cc08a] mb-1">
+          <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 mb-1">
             <span className="text-[11px] font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f]">
-              Income
-            </span>
-            <ArrowUpRight className="w-4 h-4" />
-          </div>
-          <div className="text-xl font-bold tracking-tight text-[#1c7a4b] dark:text-[#5cc08a] tabular-nums">
-            {formatCurrency(incomePaid)}
-          </div>
-          <div className="text-[11px] text-[#6c6b65] dark:text-[#9b998f] mt-1">
-            Paid & settled
-          </div>
-        </div>
-
-        {/* Expense Card */}
-        <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-4">
-          <div className="flex items-center justify-between text-[#b43e28] dark:text-[#ec8a73] mb-1">
-            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f]">
-              Expenses
+              Gross Revenue
             </span>
             <ArrowDownLeft className="w-4 h-4" />
           </div>
-          <div className="text-xl font-bold tracking-tight text-[#b43e28] dark:text-[#ec8a73] tabular-nums">
-            {formatCurrency(expensePaid)}
+          <div className="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums">
+            {formatCurrency(summary.grossRevenue)}
           </div>
           <div className="text-[11px] text-[#6c6b65] dark:text-[#9b998f] mt-1">
-            Spent to date
+            Settled client billings
           </div>
         </div>
 
-        {/* To Receive Card (Clickable to jump to unpaid) */}
+        {/* 2. Operating Expenses (OpEx) Card */}
+        <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-4">
+          <div className="flex items-center justify-between text-rose-600 dark:text-rose-400 mb-1">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f]">
+              Operating OpEx
+            </span>
+            <ArrowUpRight className="w-4 h-4" />
+          </div>
+          <div className="text-xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums">
+            {formatCurrency(summary.operatingExpenses)}
+          </div>
+          <div className="text-[11px] text-[#6c6b65] dark:text-[#9b998f] mt-1">
+            Editors, tools & ads
+          </div>
+        </div>
+
+        {/* 3. Partner Draws (Owner Equity Distributions) Card */}
+        <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-4">
+          <div className="flex items-center justify-between text-[#0d234a] dark:text-[#93c5fd] mb-1">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f]">
+              Partner Draws
+            </span>
+            <Users className="w-4 h-4 text-[#149e3e]" />
+          </div>
+          <div className="text-xl font-bold tracking-tight text-[#0d234a] dark:text-[#93c5fd] tabular-nums">
+            {formatCurrency(summary.totalPartnerDraws)}
+          </div>
+          <div className="text-[11px] text-[#6c6b65] dark:text-[#9b998f] mt-1">
+            Abdul & Punith equity draws
+          </div>
+        </div>
+
+        {/* 4. Retained Cash / Bank Balance Card */}
+        <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-4">
+          <div className="flex items-center justify-between text-[#149e3e] dark:text-[#5cc08a] mb-1">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f]">
+              Available Cash
+            </span>
+            <Wallet className="w-4 h-4 text-[#149e3e]" />
+          </div>
+          <div className="text-xl font-bold tracking-tight text-[#149e3e] dark:text-[#5cc08a] tabular-nums">
+            {formatCurrency(summary.liquidAgencyCash)}
+          </div>
+          <div className="text-[11px] text-[#6c6b65] dark:text-[#9b998f] mt-1">
+            Liquid cash in bank
+          </div>
+        </div>
+      </div>
+
+      {/* Accounts Receivable & Payable (Working Capital Strip) */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Receivables: To Receive from Clients */}
         <button
           onClick={() => {
             triggerHaptic(8);
             onFilterUnpaid();
           }}
-          className="text-left bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-4 hover:border-amber-400 transition"
+          className="text-left bg-[#ffffff] dark:bg-[#1e1d1b] border border-amber-200/80 dark:border-amber-900/40 rounded-2xl p-4 hover:border-amber-400 transition"
         >
           <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 mb-1">
-            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f]">
-              To Receive
+            <span className="text-[11px] font-semibold tracking-wider uppercase">
+              Accounts Receivable
             </span>
             <Clock className="w-4 h-4" />
           </div>
           <div className="text-xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums">
-            {formatCurrency(toReceive)}
+            {formatCurrency(summary.accountsReceivable)}
           </div>
           <div className="text-[11px] text-[#6c6b65] dark:text-[#9b998f] mt-1 flex items-center justify-between">
-            <span>Pending collection</span>
+            <span>Pending client invoices</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </div>
         </button>
 
-        {/* To Pay Card (Clickable to jump to unpaid) */}
+        {/* Payables: To Pay to Vendors/Editors */}
         <button
           onClick={() => {
             triggerHaptic(8);
             onFilterUnpaid();
           }}
-          className="text-left bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-4 hover:border-amber-400 transition"
+          className="text-left bg-[#ffffff] dark:bg-[#1e1d1b] border border-orange-200/80 dark:border-orange-900/40 rounded-2xl p-4 hover:border-orange-400 transition"
         >
-          <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 mb-1">
-            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f]">
-              To Pay
+          <div className="flex items-center justify-between text-orange-600 dark:text-orange-400 mb-1">
+            <span className="text-[11px] font-semibold tracking-wider uppercase">
+              Accounts Payable
             </span>
             <Clock className="w-4 h-4" />
           </div>
-          <div className="text-xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums">
-            {formatCurrency(toPay)}
+          <div className="text-xl font-bold tracking-tight text-orange-600 dark:text-orange-400 tabular-nums">
+            {formatCurrency(summary.accountsPayable)}
           </div>
           <div className="text-[11px] text-[#6c6b65] dark:text-[#9b998f] mt-1 flex items-center justify-between">
-            <span>Outstanding bills</span>
+            <span>Bills due to editors</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </div>
         </button>
       </div>
 
-      {/* Partner Profit Split Card */}
+      {/* Partner Equity & Profit Split Card (Abdul & Punith) */}
       <PartnerSplitCard
-        transactions={transactions}
+        transactions={filtered}
         partnerConfig={partnerConfig}
         onOpenSplitModal={onOpenSplitModal}
         onQuickRecordDraw={onQuickRecordDraw}
       />
 
-      {/* Income by Client Section */}
-      <div className="space-y-2">
-        <h3 className="text-xs font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f] px-1">
-          Income by Client
-        </h3>
-        <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-4 divide-y divide-[#f0eee6] dark:divide-[#2b2a26]">
-          {clientIncome.length > 0 ? (
-            clientIncome.map(([party, amount]) => {
-              const pct = incomePaid > 0 ? Math.round((amount / incomePaid) * 100) : 0;
-              return (
-                <div key={party} className="py-2.5 first:pt-0 last:pb-0">
+      {/* Desktop 2-Column Grid: Revenue by Client & Operating Expenses Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Revenue by Client Section */}
+        <div className="space-y-2">
+          <h3 className="text-xs font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f] px-1">
+            Client Revenue Breakdown
+          </h3>
+          <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-4 divide-y divide-[#f0eee6] dark:divide-[#2b2a26]">
+            {summary.revenueByClient.length > 0 ? (
+              summary.revenueByClient.map((item) => (
+                <div key={item.client} className="py-2.5 first:pt-0 last:pb-0">
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="font-semibold text-[#1b1b19] dark:text-[#efeee9] truncate pr-2">
-                      {party}
+                      {item.client}
                     </span>
-                    <span className="font-bold text-[#1c7a4b] dark:text-[#5cc08a] tabular-nums shrink-0">
-                      {formatCurrency(amount)}
+                    <span className="font-bold text-[#149e3e] dark:text-[#5cc08a] tabular-nums shrink-0">
+                      {formatCurrency(item.amount)}
                     </span>
                   </div>
                   <div className="w-full bg-[#f0eee6] dark:bg-[#2b2a26] h-1.5 rounded-full overflow-hidden">
                     <div
-                      className="bg-[#1f5f4a] dark:bg-[#5cc0a0] h-full rounded-full transition-all"
-                      style={{ width: `${pct}%` }}
+                      className="bg-[#149e3e] h-full rounded-full transition-all"
+                      style={{ width: `${item.pct}%` }}
                     />
                   </div>
                   <div className="text-[11px] text-[#6c6b65] dark:text-[#9b998f] mt-0.5 text-right">
-                    {pct}% of revenue
+                    {item.pct}% of revenue
                   </div>
                 </div>
-              );
-            })
-          ) : (
-            <div className="text-center py-6 text-xs text-[#6c6b65] dark:text-[#9b998f]">
-              No paid income recorded for this period.
-            </div>
-          )}
+              ))
+            ) : (
+              <div className="text-center py-6 text-xs text-[#6c6b65] dark:text-[#9b998f]">
+                No paid client income recorded for this period.
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Expenses by Category Section */}
-      <div className="space-y-2">
-        <h3 className="text-xs font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f] px-1">
-          Expenses by Category
-        </h3>
-        <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-4 divide-y divide-[#f0eee6] dark:divide-[#2b2a26]">
-          {expenseCategories.length > 0 ? (
-            expenseCategories.map(([cat, amount]) => {
-              const pct = expensePaid > 0 ? Math.round((amount / expensePaid) * 100) : 0;
-              return (
-                <div key={cat} className="py-2.5 first:pt-0 last:pb-0">
+        {/* Operating Expenses by Category Section (Partner draws excluded) */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-xs font-semibold tracking-wider uppercase text-[#6c6b65] dark:text-[#9b998f]">
+              Operating Expenses Breakdown
+            </h3>
+            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+              Excludes Partner Draws
+            </span>
+          </div>
+          <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-4 divide-y divide-[#f0eee6] dark:divide-[#2b2a26]">
+            {summary.expensesByCategory.length > 0 ? (
+              summary.expensesByCategory.map((item) => (
+                <div key={item.category} className="py-2.5 first:pt-0 last:pb-0">
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="font-semibold text-[#1b1b19] dark:text-[#efeee9] truncate pr-2">
-                      {cat}
+                      {item.category}
                     </span>
-                    <span className="font-bold text-[#b43e28] dark:text-[#ec8a73] tabular-nums shrink-0">
-                      {formatCurrency(amount)}
+                    <span className="font-bold text-rose-600 dark:text-rose-400 tabular-nums shrink-0">
+                      {formatCurrency(item.amount)}
                     </span>
                   </div>
                   <div className="w-full bg-[#f0eee6] dark:bg-[#2b2a26] h-1.5 rounded-full overflow-hidden">
                     <div
-                      className="bg-[#b43e28] dark:bg-[#ec8a73] h-full rounded-full transition-all"
-                      style={{ width: `${pct}%` }}
+                      className="bg-rose-500 h-full rounded-full transition-all"
+                      style={{ width: `${item.pct}%` }}
                     />
                   </div>
                   <div className="text-[11px] text-[#6c6b65] dark:text-[#9b998f] mt-0.5 text-right">
-                    {pct}% of expenses
+                    {item.pct}% of OpEx
                   </div>
                 </div>
-              );
-            })
-          ) : (
-            <div className="text-center py-6 text-xs text-[#6c6b65] dark:text-[#9b998f]">
-              No expenses recorded for this period.
-            </div>
-          )}
+              ))
+            ) : (
+              <div className="text-center py-6 text-xs text-[#6c6b65] dark:text-[#9b998f]">
+                No operating expenses recorded for this period.
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Empty State Banner if 0 transactions */}
       {transactions.length === 0 && (
-        <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-dashed border-[#e4e2da] dark:border-[#33322e] rounded-2xl p-8 text-center space-y-3">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-[#1f5f4a] dark:text-[#5cc0a0] flex items-center justify-center mx-auto text-xl">
+        <div className="bg-[#ffffff] dark:bg-[#1e1d1b] border border-dashed border-[#e4e2da] dark:border-[#33322e] rounded-3xl p-8 text-center space-y-3">
+          <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-[#149e3e] flex items-center justify-center mx-auto text-xl">
             ✨
           </div>
           <h4 className="font-bold text-base text-[#1b1b19] dark:text-[#efeee9]">
-            Welcome to Agency Books
+            Scale Magnet Financial Books
           </h4>
           <p className="text-xs text-[#6c6b65] dark:text-[#9b998f] max-w-xs mx-auto">
-            Keep track of client retainers, ad spends, payroll, and invoices. Everything syncs live across your team.
+            Log client income, video editing expenses, and partner profit draws with live multi-device sync between Abdul and Punith.
           </p>
           <button
             onClick={onOpenNewEntry}
-            className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-[#1f5f4a] text-white text-xs font-semibold shadow-sm hover:bg-[#184d3c] active:scale-95 transition"
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-[#0d234a] text-white text-xs font-bold shadow-sm hover:bg-[#081732] active:scale-95 transition"
           >
-            Log First Transaction
+            Record First Transaction
           </button>
         </div>
       )}

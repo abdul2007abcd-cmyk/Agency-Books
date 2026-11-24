@@ -1,6 +1,6 @@
 {
-  "name": "Agency Books",
-  "description": "Fast, mobile-optimized income, expenses and profit tracker for agencies with real-time sync, offline support, and activity audit log.",
+  "name": "Scale Magnet — Agency Accounting & Ledger",
+  "description": "Professional agency accounting software with real-time financial ledger, client income, operating expenses, partner profit split, and P&L reports.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

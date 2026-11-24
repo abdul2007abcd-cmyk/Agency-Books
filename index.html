@@ -1,52 +1,4362 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
-    <title>Agency Books</title>
-    <meta
-      name="description"
-      content="Fast, mobile-optimized income, expenses and profit tracker for agencies with real-time sync, offline support, and activity audit log."
-    />
-    <meta property="og:title" content="Agency Books" />
-    <meta
-      property="og:description"
-      content="Fast, mobile-optimized income, expenses and profit tracker for agencies with real-time sync, offline support, and activity audit log."
-    />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Scale Magnet — Business Finance</title>
+  <meta name="description" content="Mobile-first 50/50 business finance dashboard for partners Abdul and Punith.">
+  <meta name="theme-color" content="#102b55">
+  <meta name="color-scheme" content="light dark">
 
-    <!-- Mobile Web App & PWA meta tags -->
-    <meta name="theme-color" content="#1f5f4a" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Books" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Mobile & PWA Meta Tags -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Scale Magnet">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="/public/icon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-    <!-- Typography: Plus Jakarta Sans for distinctive, polished modern fintech look -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body class="bg-[#f7f6f2] dark:bg-[#121312] text-[#1b1b19] dark:text-[#efeee9] antialiased selection:bg-[#1f5f4a]/20 selection:text-[#1f5f4a]">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script>
+  <!-- Inter & JetBrains Mono Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Pinned CDN for Supabase JS v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       CSS VARIABLES & THEME SETUP
+       ========================================================================== */
+    :root {
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-elevated: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --border-subtle: #e2e8f0;
+      --border-strong: #cbd5e1;
+
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+
+      /* Scale Magnet Brand Palette */
+      --navy-900: #0a1b38;
+      --navy-800: #102b55;
+      --navy-700: #1a3c74;
+      --navy-50: #eff6ff;
+
+      --blue-500: #2563eb;
+      --blue-600: #1d4ed8;
+      --blue-50: #eff6ff;
+
+      --green-600: #10b981;
+      --green-700: #059669;
+      --green-50: #ecfdf5;
+
+      --purple-600: #8b5cf6;
+      --purple-50: #f5f3ff;
+
+      --orange-500: #f59e0b;
+      --orange-50: #fffbeb;
+
+      --red-600: #ef4444;
+      --red-50: #fef2f2;
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 1px 2px 0 rgba(16, 43, 85, 0.05);
+      --shadow-md: 0 4px 12px -1px rgba(16, 43, 85, 0.08), 0 2px 6px -1px rgba(16, 43, 85, 0.04);
+      --shadow-lg: 0 10px 25px -3px rgba(16, 43, 85, 0.12), 0 4px 10px -2px rgba(16, 43, 85, 0.05);
+
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg-page: #0a0f1d;
+        --bg-surface: #111a2e;
+        --bg-surface-elevated: #16223b;
+        --bg-subtle: #1c2a46;
+        --border-subtle: #243556;
+        --border-strong: #334b75;
+
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --text-subtle: #64748b;
+
+        --navy-50: #16223b;
+        --blue-50: #172554;
+        --green-50: #064e3b;
+        --purple-50: #3b0764;
+        --orange-50: #451a03;
+        --red-50: #450a0a;
+
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+        --shadow-md: 0 4px 12px -1px rgba(0, 0, 0, 0.5);
+        --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.6);
+      }
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #0a0f1d;
+      --bg-surface: #111a2e;
+      --bg-surface-elevated: #16223b;
+      --bg-subtle: #1c2a46;
+      --border-subtle: #243556;
+      --border-strong: #334b75;
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+
+      --navy-50: #16223b;
+      --blue-50: #172554;
+      --green-50: #064e3b;
+      --purple-50: #3b0764;
+      --orange-50: #451a03;
+      --red-50: #450a0a;
+
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 4px 12px -1px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Base Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      min-height: 100%;
+      overscroll-behavior-y: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+      font-family: var(--font-mono);
+    }
+
+    /* Typography & Hierarchy */
+    h1, h2, h3, h4 {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+      min-height: 46px; /* 46px tap target accessibility */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 600;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--blue-500);
+      outline-offset: 2px;
+    }
+
+    /* Top Sticky Header */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background-color: var(--navy-800);
+      color: #ffffff;
+      padding-top: var(--safe-top);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(10, 27, 56, 0.15);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      height: 60px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-logo-badge {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #2563eb, #10b981);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: #93c5fd;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .partner-pill-btn {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      min-height: 34px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .partner-pill-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .icon-header-btn {
+      width: 36px;
+      height: 36px;
+      min-height: 36px;
+      border-radius: var(--radius-sm);
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-header-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Offline Alert Strip */
+    .offline-banner {
+      background-color: var(--orange-500);
+      color: #000000;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 16px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-align: center;
+      z-index: 50;
+    }
+
+    .offline-banner.active {
+      display: flex;
+    }
+
+    /* Main Viewport Container */
+    .app-main {
+      flex: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 16px calc(86px + var(--safe-bottom)) 16px;
+    }
+
+    @media (min-width: 768px) {
+      .app-main {
+        padding-bottom: 40px;
+      }
+    }
+
+    /* Screen Sections */
+    .screen-section {
+      display: none;
+      animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .screen-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Month Selector Strip */
+    .month-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .month-nav-btn {
+      width: 38px;
+      height: 38px;
+      min-height: 38px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .month-nav-btn:hover {
+      background: var(--border-subtle);
+    }
+
+    .month-selector-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .month-select, .year-select {
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-weight: 700;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .btn-current-month {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--blue-600);
+      background: var(--blue-50);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      min-height: 28px;
+    }
+
+    /* Cards & Grids */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    @media (min-width: 900px) {
+      .metric-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .metric-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .metric-card.revenue::before { background: var(--green-600); }
+    .metric-card.punith::before { background: var(--purple-600); }
+    .metric-card.abdul::before { background: var(--blue-500); }
+    .metric-card.expenses::before { background: var(--orange-500); }
+
+    .metric-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .metric-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .trend-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .trend-up {
+      background: var(--green-50);
+      color: var(--green-700);
+    }
+
+    .trend-down {
+      background: var(--red-50);
+      color: var(--red-600);
+    }
+
+    .trend-neutral {
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+    }
+
+    /* Quick Action Button Strip */
+    .quick-actions-bar {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    @media (min-width: 640px) {
+      .quick-actions-bar {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .btn-action-tile {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 6px;
+      color: var(--text-main);
+      box-shadow: var(--shadow-sm);
+      min-height: 72px;
+    }
+
+    .btn-action-tile:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-subtle);
+    }
+
+    .action-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 14px;
+    }
+
+    /* Action Buttons (Primary / Secondary) */
+    .btn-primary {
+      background: var(--navy-800);
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover {
+      background: var(--navy-900);
+    }
+
+    .btn-secondary {
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-subtle);
+    }
+
+    .btn-danger {
+      background: var(--red-600);
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-sm {
+      min-height: 34px;
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    /* Search & Filter Toolbars */
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px 10px 36px;
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-icon-pos {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-subtle);
+      pointer-events: none;
+    }
+
+    .filter-chips {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      no-scrollbar: true;
+    }
+
+    .chip-btn {
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      min-height: 32px;
+      white-space: nowrap;
+    }
+
+    .chip-btn.active {
+      background: var(--navy-800);
+      color: #ffffff;
+      border-color: var(--navy-800);
+    }
+
+    /* Entries List Cards */
+    .entries-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .entry-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.15s ease;
+    }
+
+    .entry-card:hover {
+      border-color: var(--border-strong);
+    }
+
+    .entry-main-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .entry-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+
+    .entry-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .badge.paid { background: var(--green-50); color: var(--green-700); }
+    .badge.pending { background: var(--orange-50); color: var(--orange-500); }
+    .badge.overdue { background: var(--red-50); color: var(--red-600); }
+    .badge.abdul { background: var(--navy-50); color: var(--blue-600); }
+    .badge.punith { background: var(--purple-50); color: var(--purple-600); }
+
+    .entry-detail-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .entry-meta-line {
+      font-size: 11px;
+      color: var(--text-subtle);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .entry-amount-action {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .entry-amount-val {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      text-align: right;
+    }
+
+    .action-icons-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .icon-action-btn {
+      width: 34px;
+      height: 34px;
+      min-height: 34px;
+      border-radius: 6px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-subtle);
+    }
+
+    .icon-action-btn:hover {
+      color: var(--text-main);
+      background: var(--border-subtle);
+    }
+
+    .icon-action-btn.delete:hover {
+      color: var(--red-600);
+      background: var(--red-50);
+    }
+
+    /* Running Balance Hero Card for Savings */
+    .savings-hero-card {
+      background: linear-gradient(135deg, var(--navy-900), var(--navy-800));
+      color: #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .savings-balance-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #93c5fd;
+      margin-bottom: 6px;
+    }
+
+    .savings-balance-val {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .savings-breakdown-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 14px;
+    }
+
+    .savings-stat-label {
+      font-size: 11px;
+      color: #bfdbfe;
+      margin-bottom: 2px;
+    }
+
+    .savings-stat-val {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    /* Analysis & Chart View */
+    .analysis-chart-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chart-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 180px;
+      padding: 20px 0 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      overflow-x: auto;
+    }
+
+    .chart-bar-group {
+      flex: 1;
+      min-width: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .chart-bar {
+      width: 100%;
+      max-width: 24px;
+      background: #cbd5e1;
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s ease, background-color 0.2s ease;
+      min-height: 4px;
+    }
+
+    .chart-bar-group.selected .chart-bar {
+      background: var(--blue-600);
+      box-shadow: 0 0 0 2px var(--blue-500);
+    }
+
+    .chart-bar-group:hover .chart-bar {
+      background: var(--navy-800);
+    }
+
+    .chart-bar-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Who Owes Whom Banner */
+    .settlement-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .settlement-hero-text {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--navy-800);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dark .settlement-hero-text {
+      color: #93c5fd;
+    }
+
+    .settlement-split-bar {
+      height: 10px;
+      border-radius: var(--radius-full);
+      background: var(--bg-subtle);
+      overflow: hidden;
+      display: flex;
+      margin: 12px 0 8px 0;
+    }
+
+    .settlement-split-abdul {
+      background: var(--blue-500);
+      transition: width 0.3s ease;
+    }
+
+    .settlement-split-punith {
+      background: var(--purple-600);
+      transition: width 0.3s ease;
+    }
+
+    /* Table Styles */
+    .table-card {
+      overflow-x: auto;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+
+    .app-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .app-table th {
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .app-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+
+    .app-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .app-table tr:hover td {
+      background: var(--bg-subtle);
+    }
+
+    /* Floating Bottom Navigation Bar (Mobile Thumb Zone) */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      background-color: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      padding-bottom: var(--safe-bottom);
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .nav-inner {
+      max-width: 600px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      height: 62px;
+      padding: 0 4px;
+    }
+
+    .nav-tab-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      height: 100%;
+      padding: 4px 0;
+      border-radius: var(--radius-sm);
+      min-height: unset;
+      position: relative;
+    }
+
+    .nav-tab-btn svg {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.15s ease;
+    }
+
+    .nav-tab-btn.active {
+      color: var(--navy-800);
+      font-weight: 800;
+    }
+
+    .dark .nav-tab-btn.active {
+      color: #93c5fd;
+    }
+
+    .nav-tab-btn.active svg {
+      transform: scale(1.1);
+    }
+
+    .nav-tab-btn.active::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      width: 16px;
+      height: 3px;
+      background: var(--navy-800);
+      border-radius: var(--radius-full);
+    }
+
+    .dark .nav-tab-btn.active::after {
+      background: #93c5fd;
+    }
+
+    /* Desktop View Navigation Tab Strip */
+    @media (min-width: 768px) {
+      .bottom-nav {
+        position: static;
+        border-top: none;
+        box-shadow: none;
+        background: transparent;
+        padding-bottom: 0;
+        margin-bottom: 16px;
+      }
+      .nav-inner {
+        max-width: 1200px;
+        grid-template-columns: repeat(6, 1fr);
+        height: 48px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 4px;
+      }
+      .nav-tab-btn {
+        flex-direction: row;
+        gap: 6px;
+        font-size: 13px;
+        border-radius: 8px;
+      }
+      .nav-tab-btn.active {
+        background: var(--navy-800);
+        color: #ffffff !important;
+      }
+      .nav-tab-btn.active::after {
+        display: none;
+      }
+      .nav-tab-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    /* Modal / Dialog System */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(10, 27, 56, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+
+    @media (min-width: 640px) {
+      .modal-backdrop {
+        align-items: center;
+        padding: 16px;
+      }
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      background: var(--bg-surface);
+      border-radius: 24px 24px 0 0;
+      padding: 20px 20px calc(24px + var(--safe-bottom)) 20px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      border: 1px solid var(--border-subtle);
+      animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @media (min-width: 640px) {
+      .modal-sheet {
+        border-radius: 20px;
+        padding: 24px;
+      }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 11px 14px;
+      font-size: 16px;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--blue-500);
+      background: var(--bg-surface);
+    }
+
+    .partner-toggle-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: var(--bg-subtle);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+    }
+
+    .toggle-partner-btn {
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-align: center;
+      min-height: 42px;
+    }
+
+    .toggle-partner-btn.selected {
+      background: var(--navy-800);
+      color: #ffffff;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Undo Toast & Floating Alerts */
+    .toast-container {
+      position: fixed;
+      bottom: calc(76px + var(--safe-bottom));
+      left: 16px;
+      right: 16px;
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    @media (min-width: 768px) {
+      .toast-container {
+        bottom: 24px;
+        right: 24px;
+        left: auto;
+        width: 380px;
+      }
+    }
+
+    .toast-card {
+      pointer-events: auto;
+      background: var(--navy-900);
+      color: #ffffff;
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+      animation: toastIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .toast-undo-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: var(--green-600);
+      width: 100%;
+      transform-origin: left;
+      animation: drainTimer 7s linear forwards;
+    }
+
+    @keyframes drainTimer {
+      from { transform: scaleX(1); }
+      to { transform: scaleX(0); }
+    }
+
+    .toast-btn {
+      color: #93c5fd;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 4px 8px;
+      min-height: 30px;
+      text-transform: uppercase;
+    }
+
+    .toast-btn:hover {
+      color: #ffffff;
+    }
+
+    /* Login Screen Layout */
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: radial-gradient(circle at top right, #1a3c74, #0a1b38);
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-surface);
+      border-radius: 24px;
+      padding: 32px 24px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .login-brand-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .login-logo-circle {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 12px auto;
+      background: linear-gradient(135deg, #2563eb, #10b981);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 26px;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    /* Empty states */
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--text-muted);
+    }
+
+    .empty-state-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    /* Accessibility utility */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Offline Warning Banner -->
+  <div id="offlineBanner" class="offline-banner" role="alert">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+    <span>Offline — changes not saved until reconnected</span>
+  </div>
+
+  <!-- =========================================================================
+       1. LOGIN SCREEN (Strict Two Partners Only)
+       ========================================================================= -->
+  <div id="loginScreen" class="login-container">
+    <div class="login-box">
+      <div class="login-brand-header">
+        <div class="login-logo-circle">⚡</div>
+        <h1 style="font-size: 22px; margin-bottom: 4px;">Scale Magnet</h1>
+        <p style="font-size: 13px; color: var(--text-muted);">50/50 Partner Finance Portal</p>
+      </div>
+
+      <form id="loginForm">
+        <!-- Partner Selection Toggle -->
+        <div class="form-group">
+          <label class="form-label">Select Partner Account</label>
+          <div class="partner-toggle-group" id="loginPartnerToggle">
+            <button type="button" class="toggle-partner-btn selected" data-partner="Abdul" data-email="abdul@scalemagnet.app">
+              Abdul
+            </button>
+            <button type="button" class="toggle-partner-btn" data-partner="Punith" data-email="punith@scalemagnet.app">
+              Punith
+            </button>
+          </div>
+        </div>
+
+        <!-- Fixed Account Email (Read-only notice) -->
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" class="form-input" value="abdul@scalemagnet.app" readonly style="opacity: 0.85; cursor: default;">
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" for="loginPassword" style="margin-bottom: 0;">Password</label>
+            <button type="button" id="togglePasswordBtn" style="font-size: 11px; min-height: 20px; color: var(--blue-500); padding: 0;">Show</button>
+          </div>
+          <input type="password" id="loginPassword" class="form-input" required placeholder="Enter your partner password" autocomplete="current-password">
+        </div>
+
+        <div id="loginErrorMsg" style="display: none; padding: 10px; margin-bottom: 14px; background: var(--red-50); color: var(--red-600); font-size: 12px; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid rgba(239, 68, 68, 0.2);"></div>
+
+        <button type="submit" id="loginSubmitBtn" class="btn-primary" style="width: 100%; min-height: 48px; font-size: 15px; margin-top: 6px;">
+          Sign In
+        </button>
+      </form>
+
+      <!-- Supabase Setup & Demo Mode Helper -->
+      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+        <button type="button" id="openSupabaseConfigBtn" style="color: var(--blue-500); padding: 0; min-height: 24px; font-size: 11px;">
+          ⚙️ Supabase Settings
+        </button>
+        <button type="button" id="startDemoModeBtn" style="color: var(--text-muted); padding: 0; min-height: 24px; font-size: 11px;">
+          Preview with Demo Data →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       2. MAIN AUTHENTICATED APPLICATION
+       ========================================================================= -->
+  <div id="appContainer" style="display: none;">
+    <!-- Sticky Top Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="brand-group">
+          <div class="brand-logo-badge">⚡</div>
+          <div class="brand-text">
+            <span class="brand-title">Scale Magnet</span>
+            <span class="brand-sub">50/50 Revenue Split</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Install PWA Button (Hidden when running standalone) -->
+          <button id="pwaInstallHeaderBtn" class="icon-header-btn" title="Install Scale Magnet PWA" style="display: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button id="themeToggleBtn" class="icon-header-btn" title="Toggle Theme" aria-label="Toggle dark/light theme">
+            <svg id="themeIconSun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </button>
+
+          <!-- Backup & Settings Trigger -->
+          <button id="openBackupModalBtn" class="icon-header-btn" title="Export & Import Backup">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+
+          <!-- Partner Name & Sign Out -->
+          <button id="partnerSignOutBtn" class="partner-pill-btn" title="Click to Sign Out">
+            <span id="currentPartnerName">Partner</span> · Sign out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="app-main">
+
+      <!-- Navigation Bar (Desktop top row, mobile bottom bar) -->
+      <nav class="bottom-nav" aria-label="Main Navigation">
+        <div class="nav-inner">
+          <button class="nav-tab-btn active" data-screen="overview">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Overview</span>
+          </button>
+          <button class="nav-tab-btn" data-screen="clients">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>Clients</span>
+          </button>
+          <button class="nav-tab-btn" data-screen="expenses">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span>Expenses</span>
+          </button>
+          <button class="nav-tab-btn" data-screen="savings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/></svg>
+            <span>Savings</span>
+          </button>
+          <button class="nav-tab-btn" data-screen="analysis">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>Analysis</span>
+          </button>
+          <button class="nav-tab-btn" data-screen="activity">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Activity</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Month & Year Selector Strip (Shared across monthly views) -->
+      <div id="monthSelectorStrip" class="month-bar">
+        <button id="prevMonthBtn" class="month-nav-btn" aria-label="Previous Month">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+
+        <div class="month-selector-group">
+          <select id="monthSelect" class="month-select" aria-label="Select Month">
+            <option value="01">January</option>
+            <option value="02">February</option>
+            <option value="03">March</option>
+            <option value="04">April</option>
+            <option value="05">May</option>
+            <option value="06">June</option>
+            <option value="07">July</option>
+            <option value="08">August</option>
+            <option value="09">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+
+          <select id="yearSelect" class="year-select" aria-label="Select Year"></select>
+
+          <button id="currentMonthBtn" class="btn-current-month" type="button">
+            Current
+          </button>
+        </div>
+
+        <button id="nextMonthBtn" class="month-nav-btn" aria-label="Next Month">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- =====================================================================
+           SCREEN 1: OVERVIEW
+           ===================================================================== -->
+      <section id="screen-overview" class="screen-section active">
+        <!-- 4 Metric Cards -->
+        <div class="metric-grid">
+          <!-- 1. Monthly Revenue -->
+          <div class="metric-card revenue">
+            <div class="metric-label">
+              <span>Monthly Revenue</span>
+              <span id="revenueTrendBadge" class="trend-badge trend-neutral">0%</span>
+            </div>
+            <div id="overviewMonthlyRevenue" class="metric-value tabular-nums">₹0</div>
+            <div class="metric-sub">
+              <span>vs last month</span>
+              <span id="overviewPendingSub" style="margin-left: auto; color: var(--orange-500); font-weight: 600;"></span>
+            </div>
+          </div>
+
+          <!-- 2. Punith's 50% Share -->
+          <div class="metric-card punith">
+            <div class="metric-label">
+              <span>Punith's Share</span>
+              <span class="badge punith">50%</span>
+            </div>
+            <div id="overviewPunithShare" class="metric-value tabular-nums" style="color: var(--purple-600);">₹0</div>
+            <div class="metric-sub">50% gross revenue share</div>
+          </div>
+
+          <!-- 3. Abdul's 50% Share -->
+          <div class="metric-card abdul">
+            <div class="metric-label">
+              <span>Abdul's Share</span>
+              <span class="badge abdul">50%</span>
+            </div>
+            <div id="overviewAbdulShare" class="metric-value tabular-nums" style="color: var(--blue-500);">₹0</div>
+            <div class="metric-sub">50% gross revenue share</div>
+          </div>
+
+          <!-- 4. Monthly Expenses -->
+          <div class="metric-card expenses">
+            <div class="metric-label">
+              <span>Monthly Expenses</span>
+              <span id="expensesPctBadge" class="badge" style="background: var(--orange-50); color: var(--orange-500);">0%</span>
+            </div>
+            <div id="overviewMonthlyExpenses" class="metric-value tabular-nums" style="color: var(--orange-500);">₹0</div>
+            <div class="metric-sub" style="font-size: 10px;">Recorded separately · NOT deducted from shares</div>
+          </div>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="quick-actions-bar">
+          <button id="quickAddClientBtn" class="btn-action-tile">
+            <div class="action-icon" style="background: var(--blue-600);">👤</div>
+            <span style="font-size: 13px; font-weight: 700;">+ Add Client</span>
+          </button>
+          <button id="quickAddExpenseBtn" class="btn-action-tile">
+            <div class="action-icon" style="background: var(--orange-500);">💸</div>
+            <span style="font-size: 13px; font-weight: 700;">+ Add Expense</span>
+          </button>
+          <button id="quickAddSavingBtn" class="btn-action-tile">
+            <div class="action-icon" style="background: var(--green-600);">🏦</div>
+            <span style="font-size: 13px; font-weight: 700;">+ Add Saving</span>
+          </button>
+          <button id="quickCopyLastMonthBtn" class="btn-action-tile">
+            <div class="action-icon" style="background: var(--navy-800);">📋</div>
+            <span style="font-size: 13px; font-weight: 700;">Copy Last Month</span>
+          </button>
+        </div>
+
+        <!-- Month Summary Section -->
+        <div class="card">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <h3 style="font-size: 15px;">Selected Month Snapshot</h3>
+            <span id="overviewMonthTag" style="font-size: 12px; font-weight: 700; color: var(--text-muted);"></span>
+          </div>
+
+          <div id="overviewSnapshotBody" class="entries-stack">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SCREEN 2: CLIENTS
+           ===================================================================== -->
+      <section id="screen-clients" class="screen-section">
+        <!-- Top Toolbar -->
+        <div class="toolbar-row">
+          <div class="search-input-wrap">
+            <span class="search-icon-pos">🔍</span>
+            <input type="text" id="clientSearchInput" class="search-input" placeholder="Search clients, services, or status...">
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button id="openCopyClientsModalBtn" class="btn-secondary btn-sm" title="Copy clients from previous month">
+              📋 Copy Last Month
+            </button>
+            <button id="openAddClientModalBtn" class="btn-primary btn-sm">
+              + New Client
+            </button>
+          </div>
+        </div>
+
+        <!-- Status Filter Chips & Clear Month -->
+        <div class="toolbar-row" style="margin-bottom: 16px;">
+          <div class="filter-chips" id="clientFilterChips">
+            <button class="chip-btn active" data-filter="all">All (<span id="countClientsAll">0</span>)</button>
+            <button class="chip-btn" data-filter="paid">Paid (<span id="countClientsPaid">0</span>)</button>
+            <button class="chip-btn" data-filter="pending">Pending (<span id="countClientsPending">0</span>)</button>
+            <button class="chip-btn" data-filter="overdue">Overdue (<span id="countClientsOverdue">0</span>)</button>
+          </div>
+
+          <button id="clearMonthClientsBtn" class="btn-secondary btn-sm" style="color: var(--red-600); border-color: rgba(239, 68, 68, 0.3);">
+            Clear Month
+          </button>
+        </div>
+
+        <!-- Clients List Stack -->
+        <div id="clientsListContainer" class="entries-stack">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SCREEN 3: EXPENSES
+           ===================================================================== -->
+      <section id="screen-expenses" class="screen-section">
+        <div class="toolbar-row">
+          <div class="search-input-wrap">
+            <span class="search-icon-pos">🔍</span>
+            <input type="text" id="expenseSearchInput" class="search-input" placeholder="Search payee, category, note...">
+          </div>
+
+          <button id="openAddExpenseModalBtn" class="btn-primary btn-sm">
+            + New Expense
+          </button>
+        </div>
+
+        <!-- Expense Category Summary Pill Strip -->
+        <div class="toolbar-row">
+          <div class="filter-chips" id="expenseCategoryChips">
+            <button class="chip-btn active" data-cat="all">All Expenses</button>
+            <button class="chip-btn" data-cat="Video Editor">Video Editor</button>
+            <button class="chip-btn" data-cat="Software/Tools">Software/Tools</button>
+            <button class="chip-btn" data-cat="Marketing/Ads">Marketing/Ads</button>
+            <button class="chip-btn" data-cat="Contractor">Contractor</button>
+            <button class="chip-btn" data-cat="Office/Travel">Office/Travel</button>
+            <button class="chip-btn" data-cat="Miscellaneous">Miscellaneous</button>
+          </div>
+
+          <div style="font-size: 13px; font-weight: 700; color: var(--orange-500);">
+            Total: <span id="expensesScreenTotal" class="tabular-nums">₹0</span>
+          </div>
+        </div>
+
+        <div id="expensesListContainer" class="entries-stack">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SCREEN 4: SAVINGS
+           ===================================================================== -->
+      <section id="screen-savings" class="screen-section">
+        <!-- Running Balance Hero Card -->
+        <div class="savings-hero-card">
+          <div class="savings-balance-label">Total Available Savings</div>
+          <div id="savingsRunningBalance" class="savings-balance-val tabular-nums">₹0</div>
+
+          <div class="savings-breakdown-row">
+            <div>
+              <div class="savings-stat-label">Total Deposits (+)</div>
+              <div id="savingsTotalDeposits" class="savings-stat-val tabular-nums" style="color: #6ee7b7;">₹0</div>
+            </div>
+            <div>
+              <div class="savings-stat-label">Total Withdrawals (−)</div>
+              <div id="savingsTotalWithdrawals" class="savings-stat-val tabular-nums" style="color: #fca5a5;">₹0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar-row">
+          <h3 style="font-size: 15px;">Savings Transaction History</h3>
+          <button id="openAddSavingModalBtn" class="btn-primary btn-sm">
+            + Deposit / Withdraw
+          </button>
+        </div>
+
+        <div id="savingsListContainer" class="entries-stack">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SCREEN 5: ANALYSIS
+           ===================================================================== -->
+      <section id="screen-analysis" class="screen-section">
+        <!-- Range Selector Bar -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <h2 style="font-size: 18px;">Financial Analytics</h2>
+          <div class="filter-chips">
+            <button class="chip-btn active" id="analysisRangeYearBtn">Selected Year (<span id="analysisYearLabel">2026</span>)</button>
+            <button class="chip-btn" id="analysisRangeAllBtn">All Time</button>
+          </div>
+        </div>
+
+        <!-- 4 Executive Analysis KPI Cards -->
+        <div class="metric-grid" style="margin-bottom: 16px;">
+          <div class="metric-card">
+            <div class="metric-label">Cumulative Revenue</div>
+            <div id="analysisTotalRevenue" class="metric-value tabular-nums" style="color: var(--green-600);">₹0</div>
+            <div class="metric-sub">Gross client collections</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Total Expenses</div>
+            <div id="analysisTotalExpenses" class="metric-value tabular-nums" style="color: var(--orange-500);">₹0</div>
+            <div id="analysisExpenseRatio" class="metric-sub">0% of revenue</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Net Operating Profit</div>
+            <div id="analysisNetProfit" class="metric-value tabular-nums" style="color: var(--blue-600);">₹0</div>
+            <div class="metric-sub">Revenue minus expenses</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Each Partner Share</div>
+            <div id="analysisEachPartnerShare" class="metric-value tabular-nums" style="color: var(--purple-600);">₹0</div>
+            <div class="metric-sub">50% gross share per partner</div>
+          </div>
+        </div>
+
+        <!-- Monthly Revenue Bar Chart -->
+        <div class="analysis-chart-box">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div>
+              <h3 style="font-size: 15px;">Revenue by Month</h3>
+              <p style="font-size: 11px; color: var(--text-muted);">Tap a bar to inspect that month's finances</p>
+            </div>
+            <div id="chartTooltipPill" style="font-size: 12px; font-weight: 700; color: var(--blue-600); background: var(--blue-50); padding: 4px 8px; border-radius: 6px;">
+              Select a bar
+            </div>
+          </div>
+
+          <div id="revenueChartContainer" class="chart-container">
+            <!-- 12 Bars generated dynamically -->
+          </div>
+        </div>
+
+        <!-- Who Owes Whom Out-of-Pocket Settlement Card -->
+        <div class="settlement-card">
+          <div class="settlement-hero-text">
+            <span>⚖️</span>
+            <span id="settlementHeadline">Out-of-Pocket Expense Settlement</span>
+          </div>
+
+          <p id="settlementExplanation" style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+            Calculating out-of-pocket expenses paid by Abdul and Punith...
+          </p>
+
+          <div class="settlement-split-bar">
+            <div id="settlementBarAbdul" class="settlement-split-abdul" style="width: 50%;"></div>
+            <div id="settlementBarPunith" class="settlement-split-punith" style="width: 50%;"></div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700;">
+            <span style="color: var(--blue-500);">Abdul Paid: <span id="settlementPaidAbdul" class="tabular-nums">₹0</span></span>
+            <span style="color: var(--purple-600);">Punith Paid: <span id="settlementPaidPunith" class="tabular-nums">₹0</span></span>
+          </div>
+        </div>
+
+        <!-- 2 Column Layout for Top Clients & Expense Breakdown -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 16px;">
+          <!-- Top Clients -->
+          <div class="card">
+            <h3 style="font-size: 15px; margin-bottom: 12px;">Top Revenue Clients</h3>
+            <div id="analysisTopClientsList" class="entries-stack">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+          <!-- Expense Categories -->
+          <div class="card">
+            <h3 style="font-size: 15px; margin-bottom: 12px;">Expenses by Category</h3>
+            <div id="analysisCategoryBreakdownList" class="entries-stack">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Yearly Financial Summary Table -->
+        <div class="card" style="padding: 0; overflow: hidden;">
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 15px;">Yearly Summary Breakdown</h3>
+            <button id="exportYearlyCsvBtn" class="btn-secondary btn-sm" style="min-height: 30px;">
+              📥 Export Year CSV
+            </button>
+          </div>
+          <div class="table-card" style="border: none; box-shadow: none; margin: 0; border-radius: 0;">
+            <table class="app-table">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th style="text-align: right;">Revenue</th>
+                  <th style="text-align: right;">Expenses</th>
+                  <th style="text-align: right;">Net Profit</th>
+                  <th style="text-align: right;">Abdul (50%)</th>
+                  <th style="text-align: right;">Punith (50%)</th>
+                </tr>
+              </thead>
+              <tbody id="yearlySummaryTableBody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SCREEN 6: ACTIVITY AUDIT LOG
+           ===================================================================== -->
+      <section id="screen-activity" class="screen-section">
+        <div class="toolbar-row">
+          <div>
+            <h2 style="font-size: 18px;">Audit Trail & Log</h2>
+            <p style="font-size: 12px; color: var(--text-muted);">Database-enforced history of every add, edit, delete, and restore.</p>
+          </div>
+
+          <button id="openRecentlyDeletedBtn" class="btn-secondary btn-sm">
+            🗑️ Recently Deleted (<span id="recentlyDeletedCount">0</span>)
+          </button>
+        </div>
+
+        <div id="activityLogContainer" class="entries-stack" style="margin-top: 14px;">
+          <!-- Populated dynamically from database -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       MODALS & DIALOGS
+       ========================================================================= -->
+
+  <!-- Modal 1: Add / Edit Client -->
+  <div id="clientModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="clientModalTitle">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="clientModalTitle" class="modal-title">Add Client</h3>
+        <button type="button" class="icon-action-btn close-modal-btn" aria-label="Close">✕</button>
+      </div>
+
+      <form id="clientForm">
+        <input type="hidden" id="clientEntryId">
+
+        <div class="form-group">
+          <label class="form-label" for="clientNameInput">Client / Business Name</label>
+          <input type="text" id="clientNameInput" class="form-input" required maxlength="120" placeholder="e.g. Trucars, Brand Scaling, Alex">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="clientServiceInput">Service Provided</label>
+          <input type="text" id="clientServiceInput" class="form-input" required maxlength="120" placeholder="e.g. Video Editing, Social Media Growth, Ads">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="clientAmountInput">Monthly Income (₹ INR)</label>
+          <input type="number" id="clientAmountInput" class="form-input" required min="1" step="1" placeholder="e.g. 45000">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="clientStatusSelect">Payment Status</label>
+            <select id="clientStatusSelect" class="form-select">
+              <option value="paid">Paid</option>
+              <option value="pending" selected>Pending</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="clientDueDateInput">Due Date (Optional)</label>
+            <input type="date" id="clientDueDateInput" class="form-input">
+          </div>
+        </div>
+
+        <button type="submit" id="saveClientSubmitBtn" class="btn-primary" style="width: 100%; min-height: 46px; margin-top: 8px;">
+          Save Client Entry
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Add / Edit Expense -->
+  <div id="expenseModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="expenseModalTitle">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="expenseModalTitle" class="modal-title">Add Expense</h3>
+        <button type="button" class="icon-action-btn close-modal-btn" aria-label="Close">✕</button>
+      </div>
+
+      <form id="expenseForm">
+        <input type="hidden" id="expenseEntryId">
+
+        <div class="form-group">
+          <label class="form-label" for="expenseNameInput">Expense / Payee Name</label>
+          <input type="text" id="expenseNameInput" class="form-input" required maxlength="120" placeholder="e.g. Video Editor Rahul, Adobe Suite, Meta Ads">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="expenseCategorySelect">Category</label>
+          <select id="expenseCategorySelect" class="form-select">
+            <option value="Video Editor">Video Editor</option>
+            <option value="Software/Tools">Software & Tools</option>
+            <option value="Marketing/Ads">Marketing & Ads</option>
+            <option value="Contractor">Freelancer / Contractor</option>
+            <option value="Office/Travel">Office & Travel</option>
+            <option value="Miscellaneous">Miscellaneous</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="expenseDetailInput">Details / Memo (Optional)</label>
+          <input type="text" id="expenseDetailInput" class="form-input" maxlength="250" placeholder="e.g. 15 Reels batch for December">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="expenseAmountInput">Amount (₹ INR)</label>
+            <input type="number" id="expenseAmountInput" class="form-input" required min="1" step="1" placeholder="e.g. 12000">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="expenseDateInput">Date</label>
+            <input type="date" id="expenseDateInput" class="form-input" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Paid Out-of-Pocket By</label>
+          <div class="partner-toggle-group" id="expensePaidByToggle">
+            <button type="button" class="toggle-partner-btn selected" data-paidby="Abdul">Abdul</button>
+            <button type="button" class="toggle-partner-btn" data-paidby="Punith">Punith</button>
+          </div>
+        </div>
+
+        <button type="submit" id="saveExpenseSubmitBtn" class="btn-primary" style="width: 100%; min-height: 46px; margin-top: 8px;">
+          Save Expense
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Add / Edit Saving -->
+  <div id="savingModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="savingModalTitle">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="savingModalTitle" class="modal-title">Record Savings Entry</h3>
+        <button type="button" class="icon-action-btn close-modal-btn" aria-label="Close">✕</button>
+      </div>
+
+      <form id="savingForm">
+        <input type="hidden" id="savingEntryId">
+
+        <div class="form-group">
+          <label class="form-label">Transaction Type</label>
+          <div class="partner-toggle-group" id="savingTypeToggle">
+            <button type="button" class="toggle-partner-btn selected" data-type="add">
+              📥 Deposit (+)
+            </button>
+            <button type="button" class="toggle-partner-btn" data-type="withdraw">
+              📤 Withdrawal (−)
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="savingAmountInput">Amount (₹ INR)</label>
+          <input type="number" id="savingAmountInput" class="form-input" required min="1" step="1" placeholder="e.g. 10000">
+          <div id="savingBalanceHint" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+            Available Balance: <strong id="savingCurrentBalanceDisplay" class="tabular-nums">₹0</strong>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="savingDetailInput">Note / Purpose (Optional)</label>
+          <input type="text" id="savingDetailInput" class="form-input" maxlength="250" placeholder="e.g. Retained agency reserve, equipment purchase">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="savingDateInput">Date</label>
+          <input type="date" id="savingDateInput" class="form-input" required>
+        </div>
+
+        <div id="savingErrorNotice" style="display: none; padding: 10px; margin-bottom: 12px; background: var(--red-50); color: var(--red-600); font-size: 12px; font-weight: 600; border-radius: var(--radius-sm);"></div>
+
+        <button type="submit" id="saveSavingSubmitBtn" class="btn-primary" style="width: 100%; min-height: 46px; margin-top: 8px;">
+          Confirm Entry
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Recently Deleted Drawer -->
+  <div id="recentlyDeletedModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="recentlyDeletedTitle">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="recentlyDeletedTitle" class="modal-title">Recently Deleted Items</h3>
+        <button type="button" class="icon-action-btn close-modal-btn" aria-label="Close">✕</button>
+      </div>
+
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+        Soft-deleted items are safely preserved here. Click "Restore" to recover any entry.
+      </p>
+
+      <div id="recentlyDeletedListContainer" class="entries-stack" style="max-height: 60vh; overflow-y: auto;">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Supabase Setup & Runtime Credentials -->
+  <div id="supabaseConfigModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="supabaseConfigTitle">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="supabaseConfigTitle" class="modal-title">Supabase Project Config</h3>
+        <button type="button" class="icon-action-btn close-modal-btn" aria-label="Close">✕</button>
+      </div>
+
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">
+        Enter your Supabase Project URL and anon public key. These can also be set permanently in <code>index.html</code>.
+      </p>
+
+      <form id="supabaseConfigForm">
+        <div class="form-group">
+          <label class="form-label" for="cfgSupabaseUrl">Supabase Project URL</label>
+          <input type="url" id="cfgSupabaseUrl" class="form-input" placeholder="https://your-project.supabase.co" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cfgSupabaseAnonKey">Supabase Anon Public Key</label>
+          <input type="text" id="cfgSupabaseAnonKey" class="form-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI..." required>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 14px;">
+          <button type="submit" class="btn-primary" style="flex: 1;">Save & Connect</button>
+          <button type="button" id="resetToDemoModeBtn" class="btn-secondary">Use Demo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 6: Export / Import Backup -->
+  <div id="backupModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="backupModalTitle">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="backupModalTitle" class="modal-title">Data Backup & Export</h3>
+        <button type="button" class="icon-action-btn close-modal-btn" aria-label="Close">✕</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="card" style="padding: 14px;">
+          <h4 style="font-size: 14px; margin-bottom: 4px;">📥 Export JSON Backup</h4>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+            Save a complete JSON snapshot of all clients, expenses, and savings entries.
+          </p>
+          <button id="exportJsonBackupBtn" class="btn-secondary btn-sm" style="width: 100%;">
+            Download Complete JSON Backup
+          </button>
+        </div>
+
+        <div class="card" style="padding: 14px;">
+          <h4 style="font-size: 14px; margin-bottom: 4px;">📤 Import JSON Backup</h4>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+            Add records from a previous Scale Magnet backup file.
+          </p>
+          <input type="file" id="importJsonFileInput" accept=".json" style="display: none;">
+          <button type="button" id="triggerImportFileBtn" class="btn-secondary btn-sm" style="width: 100%;">
+            Select Backup File to Import...
+          </button>
+        </div>
+
+        <div class="card" style="padding: 14px;">
+          <h4 style="font-size: 14px; margin-bottom: 4px;">📊 Export CSV Spreadsheet</h4>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+            Export active month's entries for accounting in Excel or Google Sheets.
+          </p>
+          <button id="exportMonthCsvBtn" class="btn-secondary btn-sm" style="width: 100%;">
+            Download Month CSV Spreadsheet
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 7: Legacy LocalStorage Migration Offer -->
+  <div id="migrationModal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 class="modal-title">Legacy Data Found</h3>
+        <button type="button" class="icon-action-btn close-modal-btn" aria-label="Close">✕</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">
+        We found previous dashboard records stored in this browser (<code>scalarMagnetDashboard_v1</code>).
+        Would you like to import them to your Supabase cloud database now?
+      </p>
+      <div style="display: flex; gap: 8px;">
+        <button id="confirmMigrationBtn" class="btn-primary" style="flex: 1;">Yes, Upload to Supabase</button>
+        <button id="dismissMigrationBtn" class="btn-secondary" style="flex: 1;">Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- =========================================================================
+       3. VANILLA JAVASCRIPT APPLICATION CORE
+       ========================================================================= -->
+  <script>
+    // ========================================================================
+    // CONFIGURATION CONSTANTS
+    // You can hardcode your Supabase URL & anon key here, or configure via the UI.
+    // ========================================================================
+    const SUPABASE_URL = '<your-project-url>';
+    const SUPABASE_ANON_KEY = '<your-anon-key>';
+
+    // Allowed Fixed Partner Accounts
+    const PARTNER_ACCOUNTS = {
+      'abdul@scalemagnet.app': { name: 'Abdul' },
+      'punith@scalemagnet.app': { name: 'Punith' }
+    };
+
+    // ========================================================================
+    // APPLICATION STATE
+    // ========================================================================
+    const State = {
+      isDemo: false,
+      supabase: null,
+      session: null,
+      currentPartner: 'Abdul',
+      currentEmail: 'abdul@scalemagnet.app',
+      selectedMonthKey: '', // Format: 'YYYY-MM'
+      activeScreen: 'overview',
+      entries: [], // All entries from DB or demo store
+      activities: [], // Activity audit log
+      undoStack: null, // { entryId, entryData, timerId, toastEl }
+      clientFilter: 'all',
+      clientSearch: '',
+      expenseCategory: 'all',
+      expenseSearch: '',
+      analysisRange: 'year', // 'year' or 'all'
+      isOnline: navigator.onLine,
+      pwaPrompt: null
+    };
+
+    // ========================================================================
+    // UTILITIES & FORMATTERS
+    // ========================================================================
+    const formatINR = (val) => {
+      const num = Number(val) || 0;
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      }).format(num);
+    };
+
+    const formatDateDisplay = (dateStr) => {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    };
+
+    const formatTimestampDisplay = (tsStr) => {
+      if (!tsStr) return '';
+      const d = new Date(tsStr);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    };
+
+    const escapeHtml = (str) => {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    };
+
+    const getTodayDateStr = () => new Date().toISOString().slice(0, 10);
+    const getCurrentMonthKey = () => new Date().toISOString().slice(0, 7);
+
+    // ========================================================================
+    // INITIALIZATION & SUPABASE CONNECTION
+    // ========================================================================
+    function initSupabase() {
+      // 1. Check constants or localStorage overrides
+      const configuredUrl = localStorage.getItem('sm_supabase_url') || (SUPABASE_URL !== '<your-project-url>' ? SUPABASE_URL : '');
+      const configuredKey = localStorage.getItem('sm_supabase_anon_key') || (SUPABASE_ANON_KEY !== '<your-anon-key>' ? SUPABASE_ANON_KEY : '');
+
+      if (configuredUrl && configuredKey && window.supabase) {
+        try {
+          State.supabase = window.supabase.createClient(configuredUrl, configuredKey, {
+            auth: {
+              persistSession: true,
+              autoRefreshToken: true
+            }
+          });
+          State.isDemo = false;
+          return true;
+        } catch (err) {
+          console.error('[Supabase Init Error]', err);
+        }
+      }
+
+      // Fallback: Demo / Local storage mode until user provides Supabase credentials
+      State.isDemo = true;
+      return false;
+    }
+
+    // ========================================================================
+    // PWA & SERVICE WORKER SETUP
+    // ========================================================================
+    function setupPWA() {
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            console.log('[PWA] Service Worker registered:', reg.scope);
+          }).catch((err) => {
+            console.warn('[PWA] Service Worker registration skipped:', err);
+          });
         });
       }
-    </script>
-  </body>
+
+      // In-app PWA install trigger
+      const installBtn = document.getElementById('pwaInstallHeaderBtn');
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        State.pwaPrompt = e;
+        if (installBtn) installBtn.style.display = 'inline-flex';
+      });
+
+      if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+          if (!State.pwaPrompt) return;
+          State.pwaPrompt.prompt();
+          const { outcome } = await State.pwaPrompt.userChoice;
+          if (outcome === 'accepted') {
+            installBtn.style.display = 'none';
+          }
+          State.pwaPrompt = null;
+        });
+      }
+
+      window.addEventListener('appinstalled', () => {
+        if (installBtn) installBtn.style.display = 'none';
+      });
+
+      // Online / Offline tracking
+      const banner = document.getElementById('offlineBanner');
+      const updateOnlineStatus = () => {
+        State.isOnline = navigator.onLine;
+        if (State.isOnline) {
+          banner.classList.remove('active');
+        } else {
+          banner.classList.add('active');
+        }
+      };
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      updateOnlineStatus();
+    }
+
+    // ========================================================================
+    // TOAST NOTIFICATIONS & UNDO SYSTEM (7 Seconds)
+    // ========================================================================
+    function showToast(message, actionLabel = null, onAction = null, duration = 4000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast-card';
+
+      let undoBarHtml = '';
+      if (actionLabel && duration) {
+        undoBarHtml = `<div class="toast-undo-bar" style="animation-duration: ${duration}ms;"></div>`;
+      }
+
+      toast.innerHTML = `
+        <div style="font-size: 13px; font-weight: 600; line-height: 1.4;">${escapeHtml(message)}</div>
+        ${actionLabel ? `<button type="button" class="toast-btn">${escapeHtml(actionLabel)}</button>` : ''}
+        ${undoBarHtml}
+      `;
+
+      if (actionLabel && onAction) {
+        toast.querySelector('.toast-btn').addEventListener('click', () => {
+          onAction();
+          toast.remove();
+        });
+      }
+
+      container.appendChild(toast);
+
+      const timerId = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 200);
+      }, duration);
+
+      return { toast, timerId };
+    }
+
+    // ========================================================================
+    // AUTHENTICATION CONTROLLER (Abdul & Punith Only)
+    // ========================================================================
+    function setupAuth() {
+      const form = document.getElementById('loginForm');
+      const partnerToggles = document.querySelectorAll('#loginPartnerToggle .toggle-partner-btn');
+      const emailInput = document.getElementById('loginEmail');
+      const passInput = document.getElementById('loginPassword');
+      const errorMsg = document.getElementById('loginErrorMsg');
+      const togglePassBtn = document.getElementById('togglePasswordBtn');
+
+      togglePassBtn.addEventListener('click', () => {
+        if (passInput.type === 'password') {
+          passInput.type = 'text';
+          togglePassBtn.textContent = 'Hide';
+        } else {
+          passInput.type = 'password';
+          togglePassBtn.textContent = 'Show';
+        }
+      });
+
+      // Partner Selection Toggle
+      partnerToggles.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          partnerToggles.forEach((b) => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          emailInput.value = btn.dataset.email;
+          errorMsg.style.display = 'none';
+        });
+      });
+
+      // Handle Sign In Submit
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorMsg.style.display = 'none';
+        const submitBtn = document.getElementById('loginSubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Signing In...';
+
+        const email = emailInput.value.trim().toLowerCase();
+        const password = passInput.value;
+
+        // Strict verification: only Abdul or Punith emails allowed
+        if (!PARTNER_ACCOUNTS[email]) {
+          errorMsg.textContent = 'Access restricted: Only abdul@scalemagnet.app and punith@scalemagnet.app are allowed.';
+          errorMsg.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In';
+          return;
+        }
+
+        // 1. If in Demo / Offline mode:
+        if (State.isDemo || !State.supabase) {
+          const partnerName = PARTNER_ACCOUNTS[email].name;
+          State.currentPartner = partnerName;
+          State.currentEmail = email;
+          State.session = { user: { email } };
+          localStorage.setItem('sm_saved_partner_email', email);
+          loadDemoSeedData();
+          enterApp();
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In';
+          return;
+        }
+
+        // 2. Real Supabase Authentication:
+        try {
+          const { data, error } = await State.supabase.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          if (data && data.user) {
+            const userEmail = data.user.email.toLowerCase();
+            if (!PARTNER_ACCOUNTS[userEmail]) {
+              await State.supabase.auth.signOut();
+              throw new Error('Unauthorized partner account. Access rejected.');
+            }
+            State.session = data.session;
+            State.currentEmail = userEmail;
+            State.currentPartner = PARTNER_ACCOUNTS[userEmail].name;
+            localStorage.setItem('sm_saved_partner_email', userEmail);
+            await enterApp();
+          }
+        } catch (err) {
+          errorMsg.textContent = err.message || 'Login failed. Please check your password.';
+          errorMsg.style.display = 'block';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In';
+        }
+      });
+
+      // Sign Out Handler
+      document.getElementById('partnerSignOutBtn').addEventListener('click', async () => {
+        if (confirm(`Sign out of ${State.currentPartner}'s account?`)) {
+          if (State.supabase && !State.isDemo) {
+            await State.supabase.auth.signOut();
+          }
+          State.session = null;
+          localStorage.removeItem('sm_saved_partner_email');
+          document.getElementById('appContainer').style.display = 'none';
+          document.getElementById('loginScreen').style.display = 'flex';
+          passInput.value = '';
+        }
+      });
+    }
+
+    async function checkExistingSession() {
+      // 1. Real Supabase session check
+      if (State.supabase && !State.isDemo) {
+        const { data } = await State.supabase.auth.getSession();
+        if (data && data.session && data.session.user) {
+          const email = data.session.user.email.toLowerCase();
+          if (PARTNER_ACCOUNTS[email]) {
+            State.session = data.session;
+            State.currentEmail = email;
+            State.currentPartner = PARTNER_ACCOUNTS[email].name;
+            await enterApp();
+            return;
+          }
+        }
+      }
+
+      // 2. Demo session check
+      const savedEmail = localStorage.getItem('sm_saved_partner_email');
+      if (savedEmail && PARTNER_ACCOUNTS[savedEmail] && State.isDemo) {
+        State.currentEmail = savedEmail;
+        State.currentPartner = PARTNER_ACCOUNTS[savedEmail].name;
+        State.session = { user: { email: savedEmail } };
+        loadDemoSeedData();
+        enterApp();
+      }
+    }
+
+    async function enterApp() {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appContainer').style.display = 'block';
+      document.getElementById('currentPartnerName').textContent = State.currentPartner;
+
+      // Populate year selector
+      populateYearSelect();
+
+      // Set initial month to current month if not set
+      if (!State.selectedMonthKey) {
+        State.selectedMonthKey = getCurrentMonthKey();
+      }
+      syncMonthSelectorUI();
+
+      // Fetch fresh data
+      await refreshAllData();
+
+      // Check legacy migration
+      checkLegacyMigration();
+
+      // Subscribe to Realtime
+      setupRealtimeSubscription();
+    }
+
+    // ========================================================================
+    // DATABASE / DATA ACCESS LAYER (Supabase + Demo Fallback)
+    // ========================================================================
+    async function fetchEntriesFromDB() {
+      if (State.isDemo || !State.supabase) {
+        const saved = localStorage.getItem('sm_demo_entries');
+        State.entries = saved ? JSON.parse(saved) : [];
+        return State.entries;
+      }
+
+      const { data, error } = await State.supabase
+        .from('entries')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('[Fetch Entries Error]', error);
+        showToast('Error loading records: ' + error.message);
+        return [];
+      }
+
+      State.entries = data || [];
+      return State.entries;
+    }
+
+    async function fetchActivityFromDB() {
+      if (State.isDemo || !State.supabase) {
+        const saved = localStorage.getItem('sm_demo_activity');
+        State.activities = saved ? JSON.parse(saved) : [];
+        return State.activities;
+      }
+
+      const { data, error } = await State.supabase
+        .from('activity')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) {
+        console.error('[Fetch Activity Error]', error);
+        return [];
+      }
+
+      State.activities = data || [];
+      return State.activities;
+    }
+
+    async function insertEntryToDB(entryObj) {
+      if (!State.isOnline) {
+        showToast('Cannot save while offline. Reconnect to write changes.', null, null, 4000);
+        throw new Error('Offline write blocked');
+      }
+
+      const payload = {
+        ...entryObj,
+        by_email: State.currentEmail
+      };
+
+      if (State.isDemo || !State.supabase) {
+        payload.id = 'demo_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+        payload.created_at = new Date().toISOString();
+        payload.updated_at = new Date().toISOString();
+        State.entries.unshift(payload);
+        saveDemoEntries();
+        // Log activity in demo
+        logDemoActivity('add', `${State.currentPartner} added ${payload.kind}: ${payload.name} · ₹${payload.amount}`, null, payload);
+        return payload;
+      }
+
+      const { data, error } = await State.supabase
+        .from('entries')
+        .insert([payload])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+
+    async function updateEntryInDB(id, updates) {
+      if (!State.isOnline) {
+        showToast('Cannot update while offline. Reconnect to write changes.');
+        throw new Error('Offline write blocked');
+      }
+
+      const payload = {
+        ...updates,
+        by_email: State.currentEmail,
+        updated_at: new Date().toISOString()
+      };
+
+      if (State.isDemo || !State.supabase) {
+        const idx = State.entries.findIndex((e) => e.id === id);
+        if (idx !== -1) {
+          const old = { ...State.entries[idx] };
+          State.entries[idx] = { ...State.entries[idx], ...payload };
+          saveDemoEntries();
+          logDemoActivity('edit', `${State.currentPartner} updated ${old.kind}: ${old.name}`, old, State.entries[idx]);
+        }
+        return;
+      }
+
+      const { error } = await State.supabase
+        .from('entries')
+        .update(payload)
+        .eq('id', id);
+
+      if (error) throw error;
+    }
+
+    async function softDeleteEntryInDB(id) {
+      if (!State.isOnline) {
+        showToast('Cannot delete while offline. Reconnect to write changes.');
+        throw new Error('Offline write blocked');
+      }
+
+      const timestamp = new Date().toISOString();
+      if (State.isDemo || !State.supabase) {
+        const item = State.entries.find((e) => e.id === id);
+        if (item) {
+          const old = { ...item };
+          item.deleted_at = timestamp;
+          item.by_email = State.currentEmail;
+          saveDemoEntries();
+          logDemoActivity('delete', `${State.currentPartner} deleted ${item.kind}: ${item.name} · ₹${item.amount}`, old, item);
+        }
+        return;
+      }
+
+      const { error } = await State.supabase
+        .from('entries')
+        .update({
+          deleted_at: timestamp,
+          by_email: State.currentEmail,
+          updated_at: timestamp
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+    }
+
+    async function restoreEntryInDB(id) {
+      if (!State.isOnline) {
+        showToast('Cannot restore while offline.');
+        throw new Error('Offline write blocked');
+      }
+
+      const timestamp = new Date().toISOString();
+      if (State.isDemo || !State.supabase) {
+        const item = State.entries.find((e) => e.id === id);
+        if (item) {
+          const old = { ...item };
+          item.deleted_at = null;
+          item.by_email = State.currentEmail;
+          saveDemoEntries();
+          logDemoActivity('restore', `${State.currentPartner} restored ${item.kind}: ${item.name} · ₹${item.amount}`, old, item);
+        }
+        return;
+      }
+
+      const { error } = await State.supabase
+        .from('entries')
+        .update({
+          deleted_at: null,
+          by_email: State.currentEmail,
+          updated_at: timestamp
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+    }
+
+    // ========================================================================
+    // SUPABASE REALTIME SUBSCRIPTION
+    // ========================================================================
+    function setupRealtimeSubscription() {
+      if (State.isDemo || !State.supabase) return;
+
+      const channel = State.supabase.channel('scale-magnet-realtime');
+
+      channel.on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'entries' },
+        (payload) => {
+          console.log('[Realtime Entry Change]', payload);
+          // Identify author
+          const record = payload.new || payload.old;
+          const authorEmail = record ? (record.by_email || '') : '';
+          const isOtherPartner = authorEmail.toLowerCase() !== State.currentEmail.toLowerCase();
+          const partnerName = authorEmail.toLowerCase().includes('punith') ? 'Punith' : 'Abdul';
+
+          if (isOtherPartner && record) {
+            const actionVerb = payload.eventType === 'DELETE' || (payload.new && payload.new.deleted_at)
+              ? 'deleted'
+              : payload.eventType === 'INSERT'
+              ? 'added'
+              : 'updated';
+
+            showToast(`${partnerName} ${actionVerb}: ${record.kind} ${record.name || ''} · ₹${record.amount || 0}`, null, null, 5000);
+          }
+
+          // Reload UI data
+          refreshAllData();
+        }
+      ).subscribe();
+    }
+
+    // ========================================================================
+    // DEMO DATA SEEDING (When Supabase is not yet configured)
+    // ========================================================================
+    function loadDemoSeedData() {
+      if (!localStorage.getItem('sm_demo_entries')) {
+        const curM = getCurrentMonthKey();
+        const demoEntries = [
+          {
+            id: 'demo_1',
+            kind: 'client',
+            month_key: curM,
+            name: 'Trucars Media',
+            detail: 'YouTube Video Editing & Reels Growth',
+            amount: 45000,
+            status: 'paid',
+            due_date: `${curM}-10`,
+            by_email: 'abdul@scalemagnet.app',
+            entry_date: `${curM}-02`,
+            deleted_at: null,
+            created_at: new Date(Date.now() - 86400000 * 5).toISOString()
+          },
+          {
+            id: 'demo_2',
+            kind: 'client',
+            month_key: curM,
+            name: 'Horizon SaaS',
+            detail: 'Monthly Retainer - Product Launch Video',
+            amount: 60000,
+            status: 'paid',
+            due_date: `${curM}-15`,
+            by_email: 'punith@scalemagnet.app',
+            entry_date: `${curM}-04`,
+            deleted_at: null,
+            created_at: new Date(Date.now() - 86400000 * 4).toISOString()
+          },
+          {
+            id: 'demo_3',
+            kind: 'client',
+            month_key: curM,
+            name: 'FinScale Academy',
+            detail: 'Course Video Editing & Shorts',
+            amount: 35000,
+            status: 'pending',
+            due_date: `${curM}-28`,
+            by_email: 'abdul@scalemagnet.app',
+            entry_date: `${curM}-05`,
+            deleted_at: null,
+            created_at: new Date(Date.now() - 86400000 * 3).toISOString()
+          },
+          {
+            id: 'demo_4',
+            kind: 'expense',
+            month_key: curM,
+            name: 'Senior Editor Payout (Naveen)',
+            detail: '15 Longform YouTube Edits',
+            amount: 18000,
+            category: 'Video Editor',
+            paid_by: 'Abdul',
+            entry_date: `${curM}-08`,
+            by_email: 'abdul@scalemagnet.app',
+            deleted_at: null,
+            created_at: new Date(Date.now() - 86400000 * 2).toISOString()
+          },
+          {
+            id: 'demo_5',
+            kind: 'expense',
+            month_key: curM,
+            name: 'Adobe Creative Cloud Teams',
+            detail: 'Monthly Agency Software License',
+            amount: 4200,
+            category: 'Software/Tools',
+            paid_by: 'Punith',
+            entry_date: `${curM}-01`,
+            by_email: 'punith@scalemagnet.app',
+            deleted_at: null,
+            created_at: new Date(Date.now() - 86400000 * 6).toISOString()
+          },
+          {
+            id: 'demo_6',
+            kind: 'saving',
+            month_key: curM,
+            name: 'Monthly Agency Reserve',
+            detail: 'Retained earnings buffer for Q1',
+            amount: 25000,
+            type: 'add',
+            entry_date: `${curM}-01`,
+            by_email: 'abdul@scalemagnet.app',
+            deleted_at: null,
+            created_at: new Date(Date.now() - 86400000 * 7).toISOString()
+          }
+        ];
+        localStorage.setItem('sm_demo_entries', JSON.stringify(demoEntries));
+      }
+    }
+
+    function saveDemoEntries() {
+      localStorage.setItem('sm_demo_entries', JSON.stringify(State.entries));
+    }
+
+    function logDemoActivity(action, summary, oldVal, newVal) {
+      const act = {
+        id: 'act_' + Date.now(),
+        action,
+        summary,
+        old_value: oldVal,
+        new_value: newVal,
+        by_email: State.currentEmail,
+        created_at: new Date().toISOString()
+      };
+      State.activities.unshift(act);
+      localStorage.setItem('sm_demo_activity', JSON.stringify(State.activities));
+    }
+
+    // ========================================================================
+    // UI REFRESH & CALCULATION ENGINE
+    // ========================================================================
+    async function refreshAllData() {
+      await Promise.all([fetchEntriesFromDB(), fetchActivityFromDB()]);
+      renderActiveScreen();
+      updateRecentlyDeletedCount();
+    }
+
+    function renderActiveScreen() {
+      switch (State.activeScreen) {
+        case 'overview':
+          renderOverviewScreen();
+          break;
+        case 'clients':
+          renderClientsScreen();
+          break;
+        case 'expenses':
+          renderExpensesScreen();
+          break;
+        case 'savings':
+          renderSavingsScreen();
+          break;
+        case 'analysis':
+          renderAnalysisScreen();
+          break;
+        case 'activity':
+          renderActivityScreen();
+          break;
+      }
+    }
+
+    // ========================================================================
+    // SCREEN 1: OVERVIEW RENDERER
+    // ========================================================================
+    function renderOverviewScreen() {
+      const currentMonth = State.selectedMonthKey;
+      const activeEntries = State.entries.filter((e) => !e.deleted_at);
+
+      // 1. Current Month Calculations
+      const monthClients = activeEntries.filter((e) => e.kind === 'client' && e.month_key === currentMonth);
+      const paidClients = monthClients.filter((e) => e.status === 'paid');
+      const pendingClients = monthClients.filter((e) => e.status === 'pending' || e.status === 'overdue');
+
+      const monthlyRevenue = paidClients.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+      const pendingRevenue = pendingClients.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+
+      // 50/50 Revenue Split
+      const halfShare = Math.floor(monthlyRevenue / 2);
+
+      // Monthly Expenses (recorded separately, NOT deducted from shares)
+      const monthExpenses = activeEntries.filter((e) => e.kind === 'expense' && e.month_key === currentMonth);
+      const totalExpenses = monthExpenses.reduce((acc, ex) => acc + (Number(ex.amount) || 0), 0);
+      const expensesPct = monthlyRevenue > 0 ? ((totalExpenses / monthlyRevenue) * 100).toFixed(1) : '0';
+
+      // 2. Previous Month Comparison for Revenue Trend
+      const [year, month] = currentMonth.split('-').map(Number);
+      const prevDate = new Date(year, month - 2, 1);
+      const prevMonthKey = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+      const prevMonthClients = activeEntries.filter((e) => e.kind === 'client' && e.month_key === prevMonthKey && e.status === 'paid');
+      const prevRevenue = prevMonthClients.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+
+      let trendText = '0%';
+      let trendClass = 'trend-neutral';
+      if (prevRevenue > 0) {
+        const diff = ((monthlyRevenue - prevRevenue) / prevRevenue) * 100;
+        if (diff > 0) {
+          trendText = `▲ +${diff.toFixed(1)}%`;
+          trendClass = 'trend-up';
+        } else if (diff < 0) {
+          trendText = `▼ ${diff.toFixed(1)}%`;
+          trendClass = 'trend-down';
+        } else {
+          trendText = '0%';
+        }
+      } else if (monthlyRevenue > 0) {
+        trendText = '▲ New';
+        trendClass = 'trend-up';
+      }
+
+      // Update DOM elements
+      document.getElementById('overviewMonthlyRevenue').textContent = formatINR(monthlyRevenue);
+      document.getElementById('revenueTrendBadge').textContent = trendText;
+      document.getElementById('revenueTrendBadge').className = `trend-badge ${trendClass}`;
+
+      const pendingSubEl = document.getElementById('overviewPendingSub');
+      if (pendingRevenue > 0) {
+        pendingSubEl.textContent = `+${formatINR(pendingRevenue)} pending`;
+      } else {
+        pendingSubEl.textContent = '';
+      }
+
+      document.getElementById('overviewPunithShare').textContent = formatINR(halfShare);
+      document.getElementById('overviewAbdulShare').textContent = formatINR(halfShare);
+
+      document.getElementById('overviewMonthlyExpenses').textContent = formatINR(totalExpenses);
+      document.getElementById('expensesPctBadge').textContent = `${expensesPct}% of rev`;
+
+      // Month Tag on Snapshot
+      const dateObj = new Date(year, month - 1, 1);
+      const monthTitle = dateObj.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+      document.getElementById('overviewMonthTag').textContent = monthTitle;
+
+      // Render Month Snapshot Stack
+      const snapshotContainer = document.getElementById('overviewSnapshotBody');
+      const allMonthItems = [...monthClients, ...monthExpenses].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+
+      if (allMonthItems.length === 0) {
+        snapshotContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📄</div>
+            <p style="font-weight: 700; margin-bottom: 4px;">No records for ${monthTitle}</p>
+            <p style="font-size: 12px;">Use "+ Add Client" or "Copy Last Month" to start tracking.</p>
+          </div>
+        `;
+        return;
+      }
+
+      snapshotContainer.innerHTML = allMonthItems.slice(0, 6).map((item) => {
+        const isClient = item.kind === 'client';
+        const author = item.by_email && item.by_email.includes('punith') ? 'Punith' : 'Abdul';
+        const dateFormatted = formatDateDisplay(item.entry_date || item.created_at);
+
+        return `
+          <div class="entry-card">
+            <div class="entry-main-info">
+              <div class="entry-name-row">
+                <span class="entry-title">${escapeHtml(item.name)}</span>
+                ${isClient
+                  ? `<span class="badge ${item.status || 'pending'}">${escapeHtml(item.status || 'pending')}</span>`
+                  : `<span class="badge ${item.paid_by ? item.paid_by.toLowerCase() : 'abdul'}">Paid by ${escapeHtml(item.paid_by || 'Abdul')}</span>`
+                }
+              </div>
+              <div class="entry-detail-text">${escapeHtml(item.detail || (isClient ? 'Client Retainer' : 'Operating Expense'))}</div>
+              <div class="entry-meta-line">
+                <span>by ${escapeHtml(author)} · ${escapeHtml(dateFormatted)}</span>
+              </div>
+            </div>
+            <div class="entry-amount-action">
+              <div class="entry-amount-val tabular-nums" style="color: ${isClient ? 'var(--green-600)' : 'var(--orange-500)'};">
+                ${isClient ? '+' : '−'}${formatINR(item.amount)}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ========================================================================
+    // SCREEN 2: CLIENTS RENDERER
+    // ========================================================================
+    function renderClientsScreen() {
+      const currentMonth = State.selectedMonthKey;
+      const clients = State.entries.filter((e) => e.kind === 'client' && e.month_key === currentMonth && !e.deleted_at);
+
+      // Counts for filter chips
+      document.getElementById('countClientsAll').textContent = clients.length;
+      document.getElementById('countClientsPaid').textContent = clients.filter((c) => c.status === 'paid').length;
+      document.getElementById('countClientsPending').textContent = clients.filter((c) => c.status === 'pending').length;
+      document.getElementById('countClientsOverdue').textContent = clients.filter((c) => c.status === 'overdue').length;
+
+      // Filter & Search
+      const search = State.clientSearch.toLowerCase();
+      const filtered = clients.filter((c) => {
+        if (State.clientFilter !== 'all' && c.status !== State.clientFilter) return false;
+        if (search) {
+          const matchName = (c.name || '').toLowerCase().includes(search);
+          const matchDetail = (c.detail || '').toLowerCase().includes(search);
+          const matchAmount = String(c.amount || '').includes(search);
+          if (!matchName && !matchDetail && !matchAmount) return false;
+        }
+        return true;
+      });
+
+      const container = document.getElementById('clientsListContainer');
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="card empty-state">
+            <div class="empty-state-icon">👥</div>
+            <p style="font-weight: 700; margin-bottom: 4px;">No client entries found</p>
+            <p style="font-size: 12px;">Add a client for this month or copy previous clients.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((c) => {
+        const author = c.by_email && c.by_email.includes('punith') ? 'Punith' : 'Abdul';
+        const dateFormatted = formatDateDisplay(c.entry_date || c.created_at);
+        const dueFormatted = c.due_date ? `Due: ${formatDateDisplay(c.due_date)}` : '';
+
+        return `
+          <div class="entry-card" data-id="${c.id}">
+            <div class="entry-main-info">
+              <div class="entry-name-row">
+                <span class="entry-title">${escapeHtml(c.name)}</span>
+                <span class="badge ${c.status || 'pending'}">${escapeHtml(c.status || 'pending')}</span>
+                ${dueFormatted ? `<span style="font-size: 11px; color: var(--text-muted);">${escapeHtml(dueFormatted)}</span>` : ''}
+              </div>
+              <div class="entry-detail-text">${escapeHtml(c.detail || 'Service')}</div>
+              <div class="entry-meta-line">
+                <span>by ${escapeHtml(author)} · ${escapeHtml(dateFormatted)}</span>
+              </div>
+            </div>
+
+            <div class="entry-amount-action">
+              <div class="entry-amount-val tabular-nums" style="color: var(--green-600);">
+                ${formatINR(c.amount)}
+              </div>
+              <div class="action-icons-wrap">
+                <!-- Status Toggle Button -->
+                <button type="button" class="icon-action-btn toggle-client-status" data-id="${c.id}" data-current="${c.status}" title="Toggle Paid/Pending">
+                  ${c.status === 'paid' ? '✅' : '⏳'}
+                </button>
+                <!-- Edit Button -->
+                <button type="button" class="icon-action-btn edit-client-btn" data-id="${c.id}" title="Edit client">
+                  ✏️
+                </button>
+                <!-- Delete Button -->
+                <button type="button" class="icon-action-btn delete delete-client-btn" data-id="${c.id}" title="Delete client">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Attach event listeners to client buttons
+      container.querySelectorAll('.toggle-client-status').forEach((btn) => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          const nextStatus = btn.dataset.current === 'paid' ? 'pending' : 'paid';
+          await updateEntryInDB(id, { status: nextStatus });
+          refreshAllData();
+        });
+      });
+
+      container.querySelectorAll('.edit-client-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openEditClientModal(btn.dataset.id);
+        });
+      });
+
+      container.querySelectorAll('.delete-client-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleSoftDeleteEntry(btn.dataset.id);
+        });
+      });
+    }
+
+    // ========================================================================
+    // SCREEN 3: EXPENSES RENDERER
+    // ========================================================================
+    function renderExpensesScreen() {
+      const currentMonth = State.selectedMonthKey;
+      const expenses = State.entries.filter((e) => e.kind === 'expense' && e.month_key === currentMonth && !e.deleted_at);
+
+      const total = expenses.reduce((acc, ex) => acc + (Number(ex.amount) || 0), 0);
+      document.getElementById('expensesScreenTotal').textContent = formatINR(total);
+
+      const search = State.expenseSearch.toLowerCase();
+      const filtered = expenses.filter((ex) => {
+        if (State.expenseCategory !== 'all' && ex.category !== State.expenseCategory) return false;
+        if (search) {
+          const matchName = (ex.name || '').toLowerCase().includes(search);
+          const matchDetail = (ex.detail || '').toLowerCase().includes(search);
+          const matchCat = (ex.category || '').toLowerCase().includes(search);
+          if (!matchName && !matchDetail && !matchCat) return false;
+        }
+        return true;
+      });
+
+      const container = document.getElementById('expensesListContainer');
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="card empty-state">
+            <div class="empty-state-icon">💸</div>
+            <p style="font-weight: 700; margin-bottom: 4px;">No expense records found</p>
+            <p style="font-size: 12px;">Track editor payouts, ad spend, and tools here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((ex) => {
+        const author = ex.by_email && ex.by_email.includes('punith') ? 'Punith' : 'Abdul';
+        const dateFormatted = formatDateDisplay(ex.entry_date || ex.created_at);
+
+        return `
+          <div class="entry-card" data-id="${ex.id}">
+            <div class="entry-main-info">
+              <div class="entry-name-row">
+                <span class="entry-title">${escapeHtml(ex.name)}</span>
+                <span class="badge ${ex.paid_by ? ex.paid_by.toLowerCase() : 'abdul'}">Paid by ${escapeHtml(ex.paid_by || 'Abdul')}</span>
+                ${ex.category ? `<span class="badge" style="background: var(--bg-subtle); color: var(--text-muted);">${escapeHtml(ex.category)}</span>` : ''}
+              </div>
+              <div class="entry-detail-text">${escapeHtml(ex.detail || 'Operating Expense')}</div>
+              <div class="entry-meta-line">
+                <span>by ${escapeHtml(author)} · ${escapeHtml(dateFormatted)}</span>
+              </div>
+            </div>
+
+            <div class="entry-amount-action">
+              <div class="entry-amount-val tabular-nums" style="color: var(--orange-500);">
+                −${formatINR(ex.amount)}
+              </div>
+              <div class="action-icons-wrap">
+                <button type="button" class="icon-action-btn edit-expense-btn" data-id="${ex.id}" title="Edit expense">
+                  ✏️
+                </button>
+                <button type="button" class="icon-action-btn delete delete-expense-btn" data-id="${ex.id}" title="Delete expense">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.edit-expense-btn').forEach((btn) => {
+        btn.addEventListener('click', () => openEditExpenseModal(btn.dataset.id));
+      });
+
+      container.querySelectorAll('.delete-expense-btn').forEach((btn) => {
+        btn.addEventListener('click', () => handleSoftDeleteEntry(btn.dataset.id));
+      });
+    }
+
+    // ========================================================================
+    // SCREEN 4: SAVINGS RENDERER (Running Balance & Overdraft Block)
+    // ========================================================================
+    function calculateSavingsBalance() {
+      const activeSavings = State.entries.filter((e) => e.kind === 'saving' && !e.deleted_at);
+      let deposits = 0;
+      let withdrawals = 0;
+
+      for (const s of activeSavings) {
+        const amt = Number(s.amount) || 0;
+        if (s.type === 'withdraw') {
+          withdrawals += amt;
+        } else {
+          deposits += amt;
+        }
+      }
+
+      return {
+        deposits,
+        withdrawals,
+        balance: deposits - withdrawals
+      };
+    }
+
+    function renderSavingsScreen() {
+      const { deposits, withdrawals, balance } = calculateSavingsBalance();
+
+      document.getElementById('savingsRunningBalance').textContent = formatINR(balance);
+      document.getElementById('savingsTotalDeposits').textContent = `+${formatINR(deposits)}`;
+      document.getElementById('savingsTotalWithdrawals').textContent = `−${formatINR(withdrawals)}`;
+      document.getElementById('savingCurrentBalanceDisplay').textContent = formatINR(balance);
+
+      const savings = State.entries
+        .filter((e) => e.kind === 'saving' && !e.deleted_at)
+        .sort((a, b) => (b.entry_date || b.created_at || '').localeCompare(a.entry_date || a.created_at || ''));
+
+      const container = document.getElementById('savingsListContainer');
+      if (savings.length === 0) {
+        container.innerHTML = `
+          <div class="card empty-state">
+            <div class="empty-state-icon">🏦</div>
+            <p style="font-weight: 700; margin-bottom: 4px;">No savings entries recorded</p>
+            <p style="font-size: 12px;">Record deposits or withdrawals into the agency reserve.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = savings.map((s) => {
+        const isWithdrawal = s.type === 'withdraw';
+        const author = s.by_email && s.by_email.includes('punith') ? 'Punith' : 'Abdul';
+        const dateFormatted = formatDateDisplay(s.entry_date || s.created_at);
+
+        return `
+          <div class="entry-card" data-id="${s.id}">
+            <div class="entry-main-info">
+              <div class="entry-name-row">
+                <span class="entry-title">${escapeHtml(s.name || (isWithdrawal ? 'Withdrawal' : 'Deposit'))}</span>
+                <span class="badge ${isWithdrawal ? 'overdue' : 'paid'}">${isWithdrawal ? 'Withdrawal (−)' : 'Deposit (+)'}</span>
+              </div>
+              <div class="entry-detail-text">${escapeHtml(s.detail || 'Agency Reserve')}</div>
+              <div class="entry-meta-line">
+                <span>by ${escapeHtml(author)} · ${escapeHtml(dateFormatted)}</span>
+              </div>
+            </div>
+
+            <div class="entry-amount-action">
+              <div class="entry-amount-val tabular-nums" style="color: ${isWithdrawal ? 'var(--red-600)' : 'var(--green-600)'};">
+                ${isWithdrawal ? '−' : '+'}${formatINR(s.amount)}
+              </div>
+              <div class="action-icons-wrap">
+                <button type="button" class="icon-action-btn edit-saving-btn" data-id="${s.id}" title="Edit saving">
+                  ✏️
+                </button>
+                <button type="button" class="icon-action-btn delete delete-saving-btn" data-id="${s.id}" title="Delete saving">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.edit-saving-btn').forEach((btn) => {
+        btn.addEventListener('click', () => openEditSavingModal(btn.dataset.id));
+      });
+
+      container.querySelectorAll('.delete-saving-btn').forEach((btn) => {
+        btn.addEventListener('click', () => handleSoftDeleteEntry(btn.dataset.id));
+      });
+    }
+
+    // ========================================================================
+    // SCREEN 5: ANALYSIS & SETTLEMENT ENGINE
+    // ========================================================================
+    function renderAnalysisScreen() {
+      const activeEntries = State.entries.filter((e) => !e.deleted_at);
+      const selectedYear = State.selectedMonthKey.slice(0, 4);
+      document.getElementById('analysisYearLabel').textContent = selectedYear;
+
+      // Filter by range
+      const analysisEntries = activeEntries.filter((e) => {
+        if (State.analysisRange === 'year') {
+          return (e.month_key || '').startsWith(selectedYear);
+        }
+        return true;
+      });
+
+      const clientEntries = analysisEntries.filter((e) => e.kind === 'client' && e.status === 'paid');
+      const expenseEntries = analysisEntries.filter((e) => e.kind === 'expense');
+
+      const totalRevenue = clientEntries.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+      const totalExpenses = expenseEntries.reduce((acc, ex) => acc + (Number(ex.amount) || 0), 0);
+      const netProfit = totalRevenue - totalExpenses;
+      const eachShare = Math.floor(totalRevenue / 2);
+      const expenseRatio = totalRevenue > 0 ? ((totalExpenses / totalRevenue) * 100).toFixed(1) : 0;
+
+      document.getElementById('analysisTotalRevenue').textContent = formatINR(totalRevenue);
+      document.getElementById('analysisTotalExpenses').textContent = formatINR(totalExpenses);
+      document.getElementById('analysisExpenseRatio').textContent = `${expenseRatio}% of revenue`;
+      document.getElementById('analysisNetProfit').textContent = formatINR(netProfit);
+      document.getElementById('analysisEachPartnerShare').textContent = formatINR(eachShare);
+
+      // Render 12-Month Revenue Bar Chart for selected year
+      renderMonthlyBarChart(selectedYear, activeEntries);
+
+      // Render Out-of-Pocket Expense Settlement ("Who Owes Whom")
+      renderExpenseSettlement(analysisEntries);
+
+      // Render Top Clients
+      renderTopClientsLeaderboard(clientEntries);
+
+      // Render Expenses by Category
+      renderExpenseCategoryBreakdown(expenseEntries);
+
+      // Render Yearly Summary Table
+      renderYearlySummaryTable(selectedYear, activeEntries);
+    }
+
+    function renderMonthlyBarChart(yearStr, activeEntries) {
+      const container = document.getElementById('revenueChartContainer');
+      const months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+      const monthData = months.map((m, idx) => {
+        const key = `${yearStr}-${m}`;
+        const rev = activeEntries
+          .filter((e) => e.kind === 'client' && e.month_key === key && e.status === 'paid')
+          .reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+        const exp = activeEntries
+          .filter((e) => e.kind === 'expense' && e.month_key === key)
+          .reduce((acc, ex) => acc + (Number(ex.amount) || 0), 0);
+        return { key, label: monthNames[idx], rev, exp };
+      });
+
+      const maxRev = Math.max(1, ...monthData.map((d) => d.rev));
+
+      container.innerHTML = monthData.map((d) => {
+        const heightPct = Math.max(4, Math.round((d.rev / maxRev) * 100));
+        const isSelected = d.key === State.selectedMonthKey;
+
+        return `
+          <div class="chart-bar-group ${isSelected ? 'selected' : ''}" data-month="${d.key}" title="${d.label} ${yearStr}: Rev ${formatINR(d.rev)}, Exp ${formatINR(d.exp)}">
+            <div class="chart-bar" style="height: ${heightPct}%;"></div>
+            <span class="chart-bar-label">${d.label}</span>
+          </div>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.chart-bar-group').forEach((bar) => {
+        bar.addEventListener('click', () => {
+          const monthKey = bar.dataset.month;
+          State.selectedMonthKey = monthKey;
+          syncMonthSelectorUI();
+          const target = monthData.find((m) => m.key === monthKey);
+          if (target) {
+            document.getElementById('chartTooltipPill').textContent = `${target.label}: ${formatINR(target.rev)} (50% = ${formatINR(Math.floor(target.rev / 2))})`;
+          }
+          renderActiveScreen();
+        });
+      });
+    }
+
+    function renderExpenseSettlement(analysisEntries) {
+      const expenseEntries = analysisEntries.filter((e) => e.kind === 'expense');
+      let paidAbdul = 0;
+      let paidPunith = 0;
+
+      for (const ex of expenseEntries) {
+        const amt = Number(ex.amount) || 0;
+        if (ex.paid_by === 'Punith') {
+          paidPunith += amt;
+        } else {
+          paidAbdul += amt; // Default to Abdul
+        }
+      }
+
+      const totalPaid = paidAbdul + paidPunith;
+      document.getElementById('settlementPaidAbdul').textContent = formatINR(paidAbdul);
+      document.getElementById('settlementPaidPunith').textContent = formatINR(paidPunith);
+
+      const headlineEl = document.getElementById('settlementHeadline');
+      const explEl = document.getElementById('settlementExplanation');
+      const barAbdul = document.getElementById('settlementBarAbdul');
+      const barPunith = document.getElementById('settlementBarPunith');
+
+      if (totalPaid === 0) {
+        headlineEl.textContent = 'No out-of-pocket expenses recorded';
+        explEl.textContent = 'Neither partner has logged business expenses for this period.';
+        barAbdul.style.width = '50%';
+        barPunith.style.width = '50%';
+        return;
+      }
+
+      const pctAbdul = Math.round((paidAbdul / totalPaid) * 100);
+      const pctPunith = 100 - pctAbdul;
+      barAbdul.style.width = `${pctAbdul}%`;
+      barPunith.style.width = `${pctPunith}%`;
+
+      const diff = Math.abs(paidAbdul - paidPunith);
+      const owedAmount = Math.round(diff / 2);
+
+      if (owedAmount === 0) {
+        headlineEl.textContent = 'Expenses Perfectly Balanced (50/50)';
+        explEl.textContent = `Abdul and Punith have each contributed ${formatINR(paidAbdul)} out-of-pocket. Neither partner owes anything.`;
+      } else if (paidAbdul > paidPunith) {
+        headlineEl.textContent = `Punith owes Abdul ${formatINR(owedAmount)}`;
+        explEl.textContent = `Abdul covered ${formatINR(paidAbdul)} (${pctAbdul}%) while Punith covered ${formatINR(paidPunith)} (${pctPunith}%). Punith pays ${formatINR(owedAmount)} to Abdul to equalize expenses 50/50.`;
+      } else {
+        headlineEl.textContent = `Abdul owes Punith ${formatINR(owedAmount)}`;
+        explEl.textContent = `Punith covered ${formatINR(paidPunith)} (${pctPunith}%) while Abdul covered ${formatINR(paidAbdul)} (${pctAbdul}%). Abdul pays ${formatINR(owedAmount)} to Punith to equalize expenses 50/50.`;
+      }
+    }
+
+    function renderTopClientsLeaderboard(clientEntries) {
+      const clientMap = new Map();
+      for (const c of clientEntries) {
+        const name = c.name || 'Unnamed Client';
+        const amt = Number(c.amount) || 0;
+        clientMap.set(name, (clientMap.get(name) || 0) + amt);
+      }
+
+      const sorted = Array.from(clientMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const container = document.getElementById('analysisTopClientsList');
+
+      if (sorted.length === 0) {
+        container.innerHTML = '<p style="font-size: 12px; color: var(--text-muted);">No client revenue for this period.</p>';
+        return;
+      }
+
+      const total = sorted.reduce((acc, item) => acc + item[1], 0);
+
+      container.innerHTML = sorted.map(([name, sum], idx) => {
+        const pct = total > 0 ? Math.round((sum / total) * 100) : 0;
+        return `
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+              <span style="font-weight: 700;">#${idx + 1} ${escapeHtml(name)}</span>
+              <span class="tabular-nums" style="font-weight: 800; color: var(--green-600);">${formatINR(sum)}</span>
+            </div>
+            <div style="height: 6px; background: var(--bg-subtle); border-radius: var(--radius-full); overflow: hidden;">
+              <div style="height: 100%; background: var(--green-600); width: ${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderExpenseCategoryBreakdown(expenseEntries) {
+      const catMap = new Map();
+      for (const ex of expenseEntries) {
+        const cat = ex.category || 'Miscellaneous';
+        const amt = Number(ex.amount) || 0;
+        catMap.set(cat, (catMap.get(cat) || 0) + amt);
+      }
+
+      const sorted = Array.from(catMap.entries()).sort((a, b) => b[1] - a[1]);
+      const container = document.getElementById('analysisCategoryBreakdownList');
+
+      if (sorted.length === 0) {
+        container.innerHTML = '<p style="font-size: 12px; color: var(--text-muted);">No expenses recorded for this period.</p>';
+        return;
+      }
+
+      const total = sorted.reduce((acc, item) => acc + item[1], 0);
+
+      container.innerHTML = sorted.map(([cat, sum]) => {
+        const pct = total > 0 ? Math.round((sum / total) * 100) : 0;
+        return `
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+              <span style="font-weight: 600;">${escapeHtml(cat)}</span>
+              <span class="tabular-nums" style="font-weight: 700;">${formatINR(sum)} (${pct}%)</span>
+            </div>
+            <div style="height: 6px; background: var(--bg-subtle); border-radius: var(--radius-full); overflow: hidden;">
+              <div style="height: 100%; background: var(--orange-500); width: ${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderYearlySummaryTable(yearStr, activeEntries) {
+      const tbody = document.getElementById('yearlySummaryTableBody');
+      const months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+      tbody.innerHTML = months.map((m, idx) => {
+        const key = `${yearStr}-${m}`;
+        const rev = activeEntries
+          .filter((e) => e.kind === 'client' && e.month_key === key && e.status === 'paid')
+          .reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+        const exp = activeEntries
+          .filter((e) => e.kind === 'expense' && e.month_key === key)
+          .reduce((acc, ex) => acc + (Number(ex.amount) || 0), 0);
+        const net = rev - exp;
+        const half = Math.floor(rev / 2);
+
+        return `
+          <tr>
+            <td style="font-weight: 700;">${monthNames[idx]}</td>
+            <td style="text-align: right; color: var(--green-600);" class="tabular-nums">${formatINR(rev)}</td>
+            <td style="text-align: right; color: var(--orange-500);" class="tabular-nums">${formatINR(exp)}</td>
+            <td style="text-align: right; font-weight: 700;" class="tabular-nums">${formatINR(net)}</td>
+            <td style="text-align: right; color: var(--blue-500);" class="tabular-nums">${formatINR(half)}</td>
+            <td style="text-align: right; color: var(--purple-600);" class="tabular-nums">${formatINR(half)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ========================================================================
+    // SCREEN 6: ACTIVITY AUDIT LOG RENDERER
+    // ========================================================================
+    function renderActivityScreen() {
+      const container = document.getElementById('activityLogContainer');
+      const activities = State.activities;
+
+      if (activities.length === 0) {
+        container.innerHTML = `
+          <div class="card empty-state">
+            <div class="empty-state-icon">📋</div>
+            <p style="font-weight: 700; margin-bottom: 4px;">Audit log is empty</p>
+            <p style="font-size: 12px;">Every database insert, update, delete, and restore will appear here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = activities.map((act) => {
+        const author = act.by_email && act.by_email.includes('punith') ? 'Punith' : 'Abdul';
+        const dateFormatted = formatTimestampDisplay(act.created_at);
+
+        let actionBadgeClass = 'badge abdul';
+        if (act.action === 'delete') actionBadgeClass = 'badge overdue';
+        if (act.action === 'restore') actionBadgeClass = 'badge paid';
+        if (act.action === 'edit') actionBadgeClass = 'badge pending';
+
+        // Check if there are edit diffs
+        let diffHtml = '';
+        if (act.action === 'edit' && act.old_value && act.new_value) {
+          const diffs = [];
+          if (act.old_value.name !== act.new_value.name) diffs.push(`Name: "${act.old_value.name}" → "${act.new_value.name}"`);
+          if (act.old_value.amount !== act.new_value.amount) diffs.push(`Amount: ₹${act.old_value.amount} → ₹${act.new_value.amount}`);
+          if (act.old_value.status !== act.new_value.status) diffs.push(`Status: ${act.old_value.status} → ${act.new_value.status}`);
+          if (act.old_value.paid_by !== act.new_value.paid_by) diffs.push(`Paid by: ${act.old_value.paid_by} → ${act.new_value.paid_by}`);
+          if (diffs.length > 0) {
+            diffHtml = `<div style="font-size: 11px; color: var(--text-muted); background: var(--bg-subtle); padding: 4px 8px; border-radius: 4px; margin-top: 4px;">Diff: ${escapeHtml(diffs.join(' · '))}</div>`;
+          }
+        }
+
+        return `
+          <div class="card" style="padding: 12px 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: 700; font-size: 14px;">${escapeHtml(author)}</span>
+                <span class="${actionBadgeClass}">${escapeHtml(act.action)}</span>
+              </div>
+              <span style="font-size: 11px; color: var(--text-subtle);">${escapeHtml(dateFormatted)}</span>
+            </div>
+            <div style="font-size: 13px; color: var(--text-main); font-weight: 500;">
+              ${escapeHtml(act.summary)}
+            </div>
+            ${diffHtml}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ========================================================================
+    // SOFT DELETE, UNDO TOAST & RECOVERY SYSTEM
+    // ========================================================================
+    async function handleSoftDeleteEntry(id) {
+      const entry = State.entries.find((e) => e.id === id);
+      if (!entry) return;
+
+      // Execute soft-delete
+      try {
+        await softDeleteEntryInDB(id);
+        renderActiveScreen();
+
+        // Trigger 7-Second Undo Toast
+        const summary = `${entry.kind} ${entry.name} · ${formatINR(entry.amount)}`;
+        showToast(`Deleted ${summary}`, 'UNDO', async () => {
+          await restoreEntryInDB(id);
+          showToast(`Restored ${summary}`);
+          renderActiveScreen();
+        }, 7000);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function updateRecentlyDeletedCount() {
+      const deleted = State.entries.filter((e) => !!e.deleted_at);
+      const countEl = document.getElementById('recentlyDeletedCount');
+      if (countEl) countEl.textContent = deleted.length;
+    }
+
+    function renderRecentlyDeletedDrawer() {
+      const deleted = State.entries
+        .filter((e) => !!e.deleted_at)
+        .sort((a, b) => (b.deleted_at || '').localeCompare(a.deleted_at || ''));
+
+      const container = document.getElementById('recentlyDeletedListContainer');
+      if (deleted.length === 0) {
+        container.innerHTML = '<p class="empty-state" style="padding: 20px;">No recently deleted entries.</p>';
+        return;
+      }
+
+      container.innerHTML = deleted.map((item) => {
+        return `
+          <div class="entry-card">
+            <div class="entry-main-info">
+              <div class="entry-name-row">
+                <span class="entry-title">${escapeHtml(item.name)}</span>
+                <span class="badge overdue">${escapeHtml(item.kind)}</span>
+              </div>
+              <div class="entry-detail-text">Month: ${escapeHtml(item.month_key)} · ${formatINR(item.amount)}</div>
+              <div class="entry-meta-line">Deleted: ${escapeHtml(formatDateDisplay(item.deleted_at))}</div>
+            </div>
+            <button type="button" class="btn-primary btn-sm restore-item-btn" data-id="${item.id}" style="background: var(--green-600);">
+              Restore
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.restore-item-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          await restoreEntryInDB(btn.dataset.id);
+          renderRecentlyDeletedDrawer();
+          renderActiveScreen();
+          showToast('Entry restored successfully!');
+        });
+      });
+    }
+
+    // ========================================================================
+    // COPY LAST MONTH'S CLIENTS & CLEAR MONTH
+    // ========================================================================
+    async function copyLastMonthClients() {
+      const currentMonth = State.selectedMonthKey;
+      const [year, month] = currentMonth.split('-').map(Number);
+      const prevDate = new Date(year, month - 2, 1);
+      const prevMonthKey = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+
+      const activeEntries = State.entries.filter((e) => !e.deleted_at);
+      const prevClients = activeEntries.filter((e) => e.kind === 'client' && e.month_key === prevMonthKey);
+
+      if (prevClients.length === 0) {
+        alert(`No clients found in previous month (${prevMonthKey}).`);
+        return;
+      }
+
+      const existingNames = new Set(
+        activeEntries.filter((e) => e.kind === 'client' && e.month_key === currentMonth).map((c) => c.name.toLowerCase())
+      );
+
+      const toCopy = prevClients.filter((c) => !existingNames.has(c.name.toLowerCase()));
+
+      if (toCopy.length === 0) {
+        alert('All clients from last month are already present in this month.');
+        return;
+      }
+
+      if (!confirm(`Copy ${toCopy.length} clients from ${prevMonthKey} into ${currentMonth}? All copied clients will be set to Pending.`)) {
+        return;
+      }
+
+      for (const c of toCopy) {
+        await insertEntryToDB({
+          kind: 'client',
+          month_key: currentMonth,
+          name: c.name,
+          detail: c.detail,
+          amount: c.amount,
+          status: 'pending',
+          entry_date: getTodayDateStr()
+        });
+      }
+
+      showToast(`Copied ${toCopy.length} clients to ${currentMonth}`);
+      refreshAllData();
+    }
+
+    async function clearMonthClients() {
+      const currentMonth = State.selectedMonthKey;
+      const clients = State.entries.filter((e) => e.kind === 'client' && e.month_key === currentMonth && !e.deleted_at);
+
+      if (clients.length === 0) {
+        alert('No client entries to clear in this month.');
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to delete all ${clients.length} clients for ${currentMonth}? They can still be restored from Recently Deleted.`)) {
+        return;
+      }
+
+      for (const c of clients) {
+        await softDeleteEntryInDB(c.id);
+      }
+
+      showToast(`Cleared ${clients.length} clients from ${currentMonth}`);
+      refreshAllData();
+    }
+
+    // ========================================================================
+    // MODAL DIALOG CONTROLLERS (Add / Edit)
+    // ========================================================================
+    function setupModalForms() {
+      // Generic close modal buttons
+      document.querySelectorAll('.close-modal-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.modal-backdrop').forEach((m) => m.classList.remove('active'));
+        });
+      });
+
+      // 1. Client Modal Form
+      const clientForm = document.getElementById('clientForm');
+      clientForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('clientEntryId').value;
+        const name = document.getElementById('clientNameInput').value.trim();
+        const service = document.getElementById('clientServiceInput').value.trim();
+        const amount = Number(document.getElementById('clientAmountInput').value);
+        const status = document.getElementById('clientStatusSelect').value;
+        const dueDate = document.getElementById('clientDueDateInput').value || null;
+
+        if (!name || !service || isNaN(amount) || amount <= 0) {
+          alert('Please enter a valid client name, service, and positive income amount.');
+          return;
+        }
+
+        const payload = {
+          kind: 'client',
+          month_key: State.selectedMonthKey,
+          name,
+          detail: service,
+          amount,
+          status,
+          due_date: dueDate,
+          entry_date: getTodayDateStr()
+        };
+
+        try {
+          if (editId) {
+            await updateEntryInDB(editId, payload);
+            showToast(`Updated client: ${name}`);
+          } else {
+            await insertEntryToDB(payload);
+            showToast(`Added client: ${name}`);
+          }
+          document.getElementById('clientModal').classList.remove('active');
+          refreshAllData();
+        } catch (err) {
+          console.error(err);
+        }
+      });
+
+      // 2. Expense Modal Form
+      const expenseForm = document.getElementById('expenseForm');
+      const paidByToggles = document.querySelectorAll('#expensePaidByToggle .toggle-partner-btn');
+      let selectedPaidBy = 'Abdul';
+
+      paidByToggles.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          paidByToggles.forEach((b) => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedPaidBy = btn.dataset.paidby;
+        });
+      });
+
+      expenseForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('expenseEntryId').value;
+        const name = document.getElementById('expenseNameInput').value.trim();
+        const category = document.getElementById('expenseCategorySelect').value;
+        const detail = document.getElementById('expenseDetailInput').value.trim();
+        const amount = Number(document.getElementById('expenseAmountInput').value);
+        const entryDate = document.getElementById('expenseDateInput').value;
+
+        if (!name || isNaN(amount) || amount <= 0) {
+          alert('Please enter a valid expense name and positive amount.');
+          return;
+        }
+
+        const payload = {
+          kind: 'expense',
+          month_key: State.selectedMonthKey,
+          name,
+          category,
+          detail: detail || category,
+          amount,
+          paid_by: selectedPaidBy,
+          entry_date: entryDate || getTodayDateStr()
+        };
+
+        try {
+          if (editId) {
+            await updateEntryInDB(editId, payload);
+            showToast(`Updated expense: ${name}`);
+          } else {
+            await insertEntryToDB(payload);
+            showToast(`Recorded expense: ${name}`);
+          }
+          document.getElementById('expenseModal').classList.remove('active');
+          refreshAllData();
+        } catch (err) {
+          console.error(err);
+        }
+      });
+
+      // 3. Saving Modal Form (With Overdraft Validation)
+      const savingForm = document.getElementById('savingForm');
+      const savingTypeToggles = document.querySelectorAll('#savingTypeToggle .toggle-partner-btn');
+      let selectedSavingType = 'add';
+
+      savingTypeToggles.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          savingTypeToggles.forEach((b) => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedSavingType = btn.dataset.type;
+        });
+      });
+
+      savingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('savingEntryId').value;
+        const amount = Number(document.getElementById('savingAmountInput').value);
+        const detail = document.getElementById('savingDetailInput').value.trim();
+        const entryDate = document.getElementById('savingDateInput').value;
+        const errorNotice = document.getElementById('savingErrorNotice');
+        errorNotice.style.display = 'none';
+
+        if (isNaN(amount) || amount <= 0) {
+          errorNotice.textContent = 'Please enter a valid positive amount.';
+          errorNotice.style.display = 'block';
+          return;
+        }
+
+        // Overdraft validation for withdrawals
+        if (selectedSavingType === 'withdraw') {
+          const { balance } = calculateSavingsBalance();
+          let currentAvailable = balance;
+          // If editing an existing withdrawal, adjust for old amount
+          if (editId) {
+            const old = State.entries.find((s) => s.id === editId);
+            if (old && old.type === 'withdraw') currentAvailable += Number(old.amount);
+          }
+
+          if (amount > currentAvailable) {
+            errorNotice.textContent = `Withdrawal of ${formatINR(amount)} exceeds available savings balance of ${formatINR(currentAvailable)}. Entry blocked.`;
+            errorNotice.style.display = 'block';
+            return;
+          }
+        }
+
+        const payload = {
+          kind: 'saving',
+          month_key: State.selectedMonthKey,
+          name: selectedSavingType === 'withdraw' ? 'Savings Withdrawal' : 'Savings Deposit',
+          type: selectedSavingType,
+          detail: detail || (selectedSavingType === 'withdraw' ? 'Withdrawal' : 'Deposit'),
+          amount,
+          entry_date: entryDate || getTodayDateStr()
+        };
+
+        try {
+          if (editId) {
+            await updateEntryInDB(editId, payload);
+            showToast('Updated savings entry');
+          } else {
+            await insertEntryToDB(payload);
+            showToast(`${selectedSavingType === 'withdraw' ? 'Withdrew' : 'Deposited'} ${formatINR(amount)}`);
+          }
+          document.getElementById('savingModal').classList.remove('active');
+          refreshAllData();
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    }
+
+    function openAddClientModal() {
+      document.getElementById('clientForm').reset();
+      document.getElementById('clientEntryId').value = '';
+      document.getElementById('clientModalTitle').textContent = 'Add Client';
+      document.getElementById('clientModal').classList.add('active');
+    }
+
+    function openEditClientModal(id) {
+      const client = State.entries.find((c) => c.id === id);
+      if (!client) return;
+
+      document.getElementById('clientEntryId').value = client.id;
+      document.getElementById('clientNameInput').value = client.name || '';
+      document.getElementById('clientServiceInput').value = client.detail || '';
+      document.getElementById('clientAmountInput').value = client.amount || '';
+      document.getElementById('clientStatusSelect').value = client.status || 'pending';
+      document.getElementById('clientDueDateInput').value = client.due_date || '';
+      document.getElementById('clientModalTitle').textContent = 'Edit Client';
+      document.getElementById('clientModal').classList.add('active');
+    }
+
+    function openAddExpenseModal() {
+      document.getElementById('expenseForm').reset();
+      document.getElementById('expenseEntryId').value = '';
+      document.getElementById('expenseDateInput').value = getTodayDateStr();
+      document.getElementById('expenseModalTitle').textContent = 'Add Expense';
+      document.getElementById('expenseModal').classList.add('active');
+    }
+
+    function openEditExpenseModal(id) {
+      const ex = State.entries.find((e) => e.id === id);
+      if (!ex) return;
+
+      document.getElementById('expenseEntryId').value = ex.id;
+      document.getElementById('expenseNameInput').value = ex.name || '';
+      document.getElementById('expenseCategorySelect').value = ex.category || 'Miscellaneous';
+      document.getElementById('expenseDetailInput').value = ex.detail || '';
+      document.getElementById('expenseAmountInput').value = ex.amount || '';
+      document.getElementById('expenseDateInput').value = ex.entry_date || getTodayDateStr();
+
+      const paidByToggles = document.querySelectorAll('#expensePaidByToggle .toggle-partner-btn');
+      paidByToggles.forEach((b) => {
+        if (b.dataset.paidby === (ex.paid_by || 'Abdul')) {
+          b.classList.add('selected');
+        } else {
+          b.classList.remove('selected');
+        }
+      });
+
+      document.getElementById('expenseModalTitle').textContent = 'Edit Expense';
+      document.getElementById('expenseModal').classList.add('active');
+    }
+
+    function openAddSavingModal() {
+      document.getElementById('savingForm').reset();
+      document.getElementById('savingEntryId').value = '';
+      document.getElementById('savingDateInput').value = getTodayDateStr();
+      document.getElementById('savingErrorNotice').style.display = 'none';
+      document.getElementById('savingModalTitle').textContent = 'Record Savings Entry';
+
+      const { balance } = calculateSavingsBalance();
+      document.getElementById('savingCurrentBalanceDisplay').textContent = formatINR(balance);
+
+      document.getElementById('savingModal').classList.add('active');
+    }
+
+    function openEditSavingModal(id) {
+      const s = State.entries.find((e) => e.id === id);
+      if (!s) return;
+
+      document.getElementById('savingEntryId').value = s.id;
+      document.getElementById('savingAmountInput').value = s.amount || '';
+      document.getElementById('savingDetailInput').value = s.detail || '';
+      document.getElementById('savingDateInput').value = s.entry_date || getTodayDateStr();
+      document.getElementById('savingErrorNotice').style.display = 'none';
+
+      const toggles = document.querySelectorAll('#savingTypeToggle .toggle-partner-btn');
+      toggles.forEach((b) => {
+        if (b.dataset.type === (s.type || 'add')) {
+          b.classList.add('selected');
+        } else {
+          b.classList.remove('selected');
+        }
+      });
+
+      const { balance } = calculateSavingsBalance();
+      document.getElementById('savingCurrentBalanceDisplay').textContent = formatINR(balance);
+
+      document.getElementById('savingModalTitle').textContent = 'Edit Savings Entry';
+      document.getElementById('savingModal').classList.add('active');
+    }
+
+    // ========================================================================
+    // MONTH & YEAR SELECTOR HELPERS
+    // ========================================================================
+    function populateYearSelect() {
+      const yearSelect = document.getElementById('yearSelect');
+      const curYear = new Date().getFullYear();
+      yearSelect.innerHTML = '';
+      for (let y = curYear - 2; y <= curYear + 2; y++) {
+        const opt = document.createElement('option');
+        opt.value = String(y);
+        opt.textContent = String(y);
+        if (y === curYear) opt.selected = true;
+        yearSelect.appendChild(opt);
+      }
+    }
+
+    function syncMonthSelectorUI() {
+      if (!State.selectedMonthKey) return;
+      const [year, month] = State.selectedMonthKey.split('-');
+      document.getElementById('monthSelect').value = month;
+      document.getElementById('yearSelect').value = year;
+    }
+
+    function setupMonthBarEvents() {
+      const monthSelect = document.getElementById('monthSelect');
+      const yearSelect = document.getElementById('yearSelect');
+
+      const applyNewMonth = () => {
+        State.selectedMonthKey = `${yearSelect.value}-${monthSelect.value}`;
+        renderActiveScreen();
+      };
+
+      monthSelect.addEventListener('change', applyNewMonth);
+      yearSelect.addEventListener('change', applyNewMonth);
+
+      document.getElementById('prevMonthBtn').addEventListener('click', () => {
+        const [y, m] = State.selectedMonthKey.split('-').map(Number);
+        const prev = new Date(y, m - 2, 1);
+        State.selectedMonthKey = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
+        syncMonthSelectorUI();
+        renderActiveScreen();
+      });
+
+      document.getElementById('nextMonthBtn').addEventListener('click', () => {
+        const [y, m] = State.selectedMonthKey.split('-').map(Number);
+        const next = new Date(y, m, 1);
+        State.selectedMonthKey = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`;
+        syncMonthSelectorUI();
+        renderActiveScreen();
+      });
+
+      document.getElementById('currentMonthBtn').addEventListener('click', () => {
+        State.selectedMonthKey = getCurrentMonthKey();
+        syncMonthSelectorUI();
+        renderActiveScreen();
+      });
+    }
+
+    // ========================================================================
+    // BACKUP, EXPORT & IMPORT CONTROLLER
+    // ========================================================================
+    function setupBackupAndExport() {
+      // 1. Export JSON Backup
+      document.getElementById('exportJsonBackupBtn').addEventListener('click', () => {
+        const backupData = {
+          app: 'ScaleMagnet',
+          version: '2.0',
+          exportedAt: new Date().toISOString(),
+          exportedBy: State.currentEmail,
+          entries: State.entries
+        };
+
+        const jsonStr = JSON.stringify(backupData, null, 2);
+        downloadFile(`scale-magnet-backup-${getTodayDateStr()}.json`, jsonStr, 'application/json');
+        showToast('JSON Backup downloaded!');
+      });
+
+      // 2. Import JSON Backup
+      const fileInput = document.getElementById('importJsonFileInput');
+      document.getElementById('triggerImportFileBtn').addEventListener('click', () => {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          try {
+            const parsed = JSON.parse(event.target.result);
+            const importedEntries = parsed.entries || (Array.isArray(parsed) ? parsed : null);
+
+            if (!importedEntries || !Array.isArray(importedEntries)) {
+              alert('Invalid backup file format: entries list not found.');
+              return;
+            }
+
+            if (!confirm(`Found ${importedEntries.length} entries in backup. Import and add them to your database?`)) {
+              return;
+            }
+
+            for (const item of importedEntries) {
+              await insertEntryToDB({
+                kind: item.kind,
+                month_key: item.month_key || State.selectedMonthKey,
+                name: item.name,
+                detail: item.detail,
+                amount: Number(item.amount) || 0,
+                type: item.type,
+                status: item.status,
+                due_date: item.due_date,
+                paid_by: item.paid_by,
+                entry_date: item.entry_date || getTodayDateStr()
+              });
+            }
+
+            document.getElementById('backupModal').classList.remove('active');
+            showToast(`Imported ${importedEntries.length} entries!`);
+            refreshAllData();
+          } catch (err) {
+            alert('Failed to parse backup file: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      // 3. Export Month CSV
+      document.getElementById('exportMonthCsvBtn').addEventListener('click', () => {
+        exportCSVForMonth(State.selectedMonthKey);
+      });
+
+      // 4. Export Year CSV
+      document.getElementById('exportYearlyCsvBtn').addEventListener('click', () => {
+        exportCSVForYear(State.selectedMonthKey.slice(0, 4));
+      });
+    }
+
+    function exportCSVForMonth(monthKey) {
+      const activeEntries = State.entries.filter((e) => e.month_key === monthKey && !e.deleted_at);
+      const rows = [
+        ['Kind', 'Name', 'Detail', 'Amount (INR)', 'Status/Type', 'Paid By', 'Date', 'Logged By']
+      ];
+
+      for (const e of activeEntries) {
+        rows.push([
+          e.kind,
+          `"${(e.name || '').replace(/"/g, '""')}"`,
+          `"${(e.detail || '').replace(/"/g, '""')}"`,
+          e.amount,
+          e.status || e.type || '',
+          e.paid_by || '',
+          e.entry_date || '',
+          e.by_email || ''
+        ]);
+      }
+
+      const csvContent = rows.map((r) => r.join(',')).join('\n');
+      downloadFile(`scale-magnet-${monthKey}.csv`, csvContent, 'text/csv');
+      showToast(`Exported CSV for ${monthKey}`);
+    }
+
+    function exportCSVForYear(yearStr) {
+      const activeEntries = State.entries.filter((e) => (e.month_key || '').startsWith(yearStr) && !e.deleted_at);
+      const rows = [
+        ['Month', 'Kind', 'Name', 'Detail', 'Amount (INR)', 'Status/Type', 'Paid By', 'Date', 'Logged By']
+      ];
+
+      for (const e of activeEntries) {
+        rows.push([
+          e.month_key,
+          e.kind,
+          `"${(e.name || '').replace(/"/g, '""')}"`,
+          `"${(e.detail || '').replace(/"/g, '""')}"`,
+          e.amount,
+          e.status || e.type || '',
+          e.paid_by || '',
+          e.entry_date || '',
+          e.by_email || ''
+        ]);
+      }
+
+      const csvContent = rows.map((r) => r.join(',')).join('\n');
+      downloadFile(`scale-magnet-${yearStr}-all.csv`, csvContent, 'text/csv');
+      showToast(`Exported yearly CSV for ${yearStr}`);
+    }
+
+    function downloadFile(filename, content, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ========================================================================
+    // LEGACY MIGRATION CHECK (scalarMagnetDashboard_v1)
+    // ========================================================================
+    function checkLegacyMigration() {
+      const legacyRaw = localStorage.getItem('scalarMagnetDashboard_v1');
+      if (!legacyRaw) return;
+
+      // Only prompt if database has 0 client entries
+      const clientCount = State.entries.filter((e) => e.kind === 'client').length;
+      if (clientCount > 0) return;
+
+      const modal = document.getElementById('migrationModal');
+      modal.classList.add('active');
+
+      document.getElementById('confirmMigrationBtn').onclick = async () => {
+        try {
+          const parsed = JSON.parse(legacyRaw);
+          const records = Array.isArray(parsed) ? parsed : (parsed.entries || parsed.clients || []);
+
+          for (const item of records) {
+            await insertEntryToDB({
+              kind: item.kind || 'client',
+              month_key: item.month_key || State.selectedMonthKey,
+              name: item.name || item.clientName || 'Legacy Entry',
+              detail: item.detail || item.service || 'Imported from scalarMagnetDashboard_v1',
+              amount: Number(item.amount || item.income || item.price) || 1000,
+              status: item.status || 'paid',
+              entry_date: item.entry_date || getTodayDateStr()
+            });
+          }
+
+          modal.classList.remove('active');
+          localStorage.removeItem('scalarMagnetDashboard_v1');
+          showToast(`Migrated ${records.length} legacy entries!`);
+          refreshAllData();
+        } catch (err) {
+          alert('Migration failed: ' + err.message);
+        }
+      };
+
+      document.getElementById('dismissMigrationBtn').onclick = () => {
+        modal.classList.remove('active');
+      };
+    }
+
+    // ========================================================================
+    // EVENT WIREUP & APP BOOTSTRAP
+    // ========================================================================
+    function wireEventHandlers() {
+      // Screen Navigation Tabs
+      document.querySelectorAll('.nav-tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.nav-tab-btn').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          const targetScreen = btn.dataset.screen;
+          State.activeScreen = targetScreen;
+
+          document.querySelectorAll('.screen-section').forEach((sec) => sec.classList.remove('active'));
+          const activeSec = document.getElementById(`screen-${targetScreen}`);
+          if (activeSec) activeSec.classList.add('active');
+
+          renderActiveScreen();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+
+      // Quick Actions on Overview
+      document.getElementById('quickAddClientBtn').addEventListener('click', openAddClientModal);
+      document.getElementById('quickAddExpenseBtn').addEventListener('click', openAddExpenseModal);
+      document.getElementById('quickAddSavingBtn').addEventListener('click', openAddSavingModal);
+      document.getElementById('quickCopyLastMonthBtn').addEventListener('click', copyLastMonthClients);
+
+      // Clients toolbar buttons
+      document.getElementById('openAddClientModalBtn').addEventListener('click', openAddClientModal);
+      document.getElementById('openCopyClientsModalBtn').addEventListener('click', copyLastMonthClients);
+      document.getElementById('clearMonthClientsBtn').addEventListener('click', clearMonthClients);
+
+      // Client filter chips
+      document.querySelectorAll('#clientFilterChips .chip-btn').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('#clientFilterChips .chip-btn').forEach((c) => c.classList.remove('active'));
+          chip.classList.add('active');
+          State.clientFilter = chip.dataset.filter;
+          renderClientsScreen();
+        });
+      });
+
+      // Client Search
+      document.getElementById('clientSearchInput').addEventListener('input', (e) => {
+        State.clientSearch = e.target.value.trim();
+        renderClientsScreen();
+      });
+
+      // Expenses toolbar buttons
+      document.getElementById('openAddExpenseModalBtn').addEventListener('click', openAddExpenseModal);
+      document.querySelectorAll('#expenseCategoryChips .chip-btn').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('#expenseCategoryChips .chip-btn').forEach((c) => c.classList.remove('active'));
+          chip.classList.add('active');
+          State.expenseCategory = chip.dataset.cat;
+          renderExpensesScreen();
+        });
+      });
+
+      document.getElementById('expenseSearchInput').addEventListener('input', (e) => {
+        State.expenseSearch = e.target.value.trim();
+        renderExpensesScreen();
+      });
+
+      // Savings toolbar
+      document.getElementById('openAddSavingModalBtn').addEventListener('click', openAddSavingModal);
+
+      // Analysis Range Buttons
+      document.getElementById('analysisRangeYearBtn').addEventListener('click', () => {
+        document.getElementById('analysisRangeYearBtn').classList.add('active');
+        document.getElementById('analysisRangeAllBtn').classList.remove('active');
+        State.analysisRange = 'year';
+        renderAnalysisScreen();
+      });
+
+      document.getElementById('analysisRangeAllBtn').addEventListener('click', () => {
+        document.getElementById('analysisRangeAllBtn').classList.add('active');
+        document.getElementById('analysisRangeYearBtn').classList.remove('active');
+        State.analysisRange = 'all';
+        renderAnalysisScreen();
+      });
+
+      // Recently Deleted Modal Trigger
+      document.getElementById('openRecentlyDeletedBtn').addEventListener('click', () => {
+        renderRecentlyDeletedDrawer();
+        document.getElementById('recentlyDeletedModal').classList.add('active');
+      });
+
+      // Backup Modal Trigger
+      document.getElementById('openBackupModalBtn').addEventListener('click', () => {
+        document.getElementById('backupModal').classList.add('active');
+      });
+
+      // Supabase Config Modal Trigger & Form
+      document.getElementById('openSupabaseConfigBtn').addEventListener('click', () => {
+        document.getElementById('cfgSupabaseUrl').value = localStorage.getItem('sm_supabase_url') || (SUPABASE_URL !== '<your-project-url>' ? SUPABASE_URL : '');
+        document.getElementById('cfgSupabaseAnonKey').value = localStorage.getItem('sm_supabase_anon_key') || (SUPABASE_ANON_KEY !== '<your-anon-key>' ? SUPABASE_ANON_KEY : '');
+        document.getElementById('supabaseConfigModal').classList.add('active');
+      });
+
+      document.getElementById('supabaseConfigForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const url = document.getElementById('cfgSupabaseUrl').value.trim();
+        const key = document.getElementById('cfgSupabaseAnonKey').value.trim();
+        localStorage.setItem('sm_supabase_url', url);
+        localStorage.setItem('sm_supabase_anon_key', key);
+        document.getElementById('supabaseConfigModal').classList.remove('active');
+        initSupabase();
+        showToast('Supabase settings saved! Please sign in with your partner credentials.');
+      });
+
+      document.getElementById('resetToDemoModeBtn').addEventListener('click', () => {
+        localStorage.removeItem('sm_supabase_url');
+        localStorage.removeItem('sm_supabase_anon_key');
+        document.getElementById('supabaseConfigModal').classList.remove('active');
+        initSupabase();
+        showToast('Reset to Demo Mode.');
+      });
+
+      document.getElementById('startDemoModeBtn').addEventListener('click', () => {
+        State.isDemo = true;
+        State.currentPartner = 'Abdul';
+        State.currentEmail = 'abdul@scalemagnet.app';
+        State.session = { user: { email: 'abdul@scalemagnet.app' } };
+        localStorage.setItem('sm_saved_partner_email', 'abdul@scalemagnet.app');
+        loadDemoSeedData();
+        enterApp();
+        showToast('Viewing Scale Magnet with demo partner data.');
+      });
+
+      // Theme Toggle (Dark / Light)
+      const themeBtn = document.getElementById('themeToggleBtn');
+      const savedTheme = localStorage.getItem('sm_theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      }
+
+      themeBtn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('sm_theme', next);
+      });
+    }
+
+    // ========================================================================
+    // DOM READY ENTRY POINT
+    // ========================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      initSupabase();
+      setupPWA();
+      setupAuth();
+      setupMonthBarEvents();
+      setupModalForms();
+      setupBackupAndExport();
+      wireEventHandlers();
+      checkExistingSession();
+    });
+  </script>
+</body>
 </html>

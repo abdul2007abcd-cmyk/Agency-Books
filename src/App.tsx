@@ -55,7 +55,7 @@ export default function App() {
   const [isPartnerSplitOpen, setIsPartnerSplitOpen] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isNameModalOpen, setIsNameModalOpen] = useState<boolean>(false);
-  const [entriesFilter, setEntriesFilter] = useState<'all' | 'income' | 'expense' | 'unpaid'>('all');
+  const [entriesFilter, setEntriesFilter] = useState<'all' | 'income' | 'expense' | 'draw' | 'unpaid'>('all');
 
   // Synchronize authenticated partner name with transaction author
   useEffect(() => {
@@ -179,7 +179,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f7f6f2] dark:bg-[#121312] text-[#1b1b19] dark:text-[#efeee9] flex flex-col font-sans transition-colors selection:bg-[#1f5f4a]/20">
-      {/* Top Header */}
+      {/* Top Header with desktop accounting navigation tabs and controls */}
       <Header
         userName={userName}
         currentSession={session}
@@ -192,6 +192,13 @@ export default function App() {
         onLogout={handleLogout}
         onOpenMenu={() => setIsMenuOpen(true)}
         onRefresh={refreshData}
+        activeTab={activeTab}
+        onChangeTab={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'entries') setEntriesFilter('all');
+        }}
+        unpaidCount={unpaidCount}
+        onOpenNewEntry={() => setIsNewEntryOpen(true)}
       />
 
       {/* Offline Alert Strip */}
@@ -202,8 +209,8 @@ export default function App() {
         </div>
       )}
 
-      {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-2xl mx-auto px-4">
+      {/* Main Content Area: Responsive accounting canvas (max-w-7xl for desktop Windows tabs) */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
         {activeTab === 'overview' && (
           <OverviewView
             transactions={activeTransactions}

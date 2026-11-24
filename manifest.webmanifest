@@ -1,0 +1,33 @@
+{
+  "id": "/",
+  "name": "Scale Magnet — Business Finance",
+  "short_name": "Scale Magnet",
+  "description": "Mobile-first 50/50 business finance dashboard for partners Abdul and Punith.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#102b55",
+  "background_color": "#102b55",
+  "categories": ["finance", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
